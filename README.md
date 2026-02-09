@@ -19,6 +19,7 @@ This project collects real-time bike station data from the JCDecaux API, stores 
 - HTML / CSS / JavaScript
 
 ## Project Structure
+```
 dublin-bike-webapp
 ├── app
 │   ├── routes              # Flask route definitions
@@ -42,6 +43,7 @@ dublin-bike-webapp
 ├── requirements.txt        # Dependencies
 ├── .gitignore              # Ignored files
 └── README.md               # Project documentation
+```
 
 ## Installation
 
@@ -66,3 +68,4 @@ cd dublin-bike-webapp
 - Xiaoli Wu
 - Andrew Mitchell
 - Conor Walsh
+
