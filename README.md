@@ -61,8 +61,8 @@ cd dublin-bike-webapp
 - UI Mockups → `docs/mockups/`
 
 ### Project Management
-- Product Backlog → [View on Google Docs]([https://your-product-backlog-link](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=1973710968#gid=1973710968))
-- Sprint Backlog → [View on Google Docs]([https://your-sprint-backlog-link](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=0#gid=0))
+- Product Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=1973710968)
+- Sprint Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=0)
 
 ## Team Members
 - Xiaoli Wu
