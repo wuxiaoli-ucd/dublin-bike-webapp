@@ -38,9 +38,9 @@ with engine.begin() as conn:
 
 print("Created weather_hourly table.")
 
-for res in engine.execute(text("SHOW VARIABLES;")):
-    print(res)
-
+with engine.connect() as conn:
+    for res in conn.execute(text("SHOW VARIABLES;")):
+        print(res)
 
 
 
