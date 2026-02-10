@@ -9,9 +9,11 @@ import dbinfo
 
 def get_weather() -> dict:
     params = {
-        "q": "Dublin,IE",
+        "lat": dbinfo.LAT,
+        "lon": dbinfo.LON,
         "appid": dbinfo.OWKEY,
         "units": "metric",
+        "exclude": "minutely,daily,alerts",
     }
     r = requests.get(dbinfo.OPENWEATHER_URL, params=params, timeout=30)
     r.raise_for_status()
