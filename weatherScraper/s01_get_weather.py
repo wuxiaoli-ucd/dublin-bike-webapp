@@ -25,7 +25,12 @@ def write_to_file(payload: dict) -> str:
     os.makedirs("data", exist_ok=True)
 
     # UTC timestamp in filename, safe for filesystems
-    ts = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-") + "Z"
+    ts = (
+    datetime.datetime.now(datetime.UTC)
+    .replace(microsecond=0)
+    .isoformat()
+    .replace(":", "-")
+    )
     path = f"data/weather_{ts}.json"
 
     with open(path, "w") as f:
@@ -47,3 +52,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
