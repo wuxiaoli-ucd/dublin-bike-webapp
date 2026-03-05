@@ -5,8 +5,9 @@ let destPlace = null;
 let stationMarkers = [];
 let routeLines = [];
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id); // shortcut
 
+// ---------- helpers ----------
 function clearMarkers() {
   stationMarkers.forEach(m => m.setMap(null));
   stationMarkers = [];
@@ -18,22 +19,71 @@ function clearRoutes() {
 }
 
 function setError(msg = "") {
-  $("error").textContent = msg;
+  const el = $("error");
+  if (el) el.textContent = msg;
 }
 
-function showDetails(lines, summaryText) {
-  $("summary").textContent = summaryText;
+function durToSec(d) {
+  if (!d) return 0;
+  const s = String(d).trim();
+  if (!s.endsWith("s")) return 0;
+  return Math.round(parseFloat(s.slice(0, -1)) || 0);
+}
+
+function secToMin(s) {
+  return Math.round(s / 60);
+}
+
+// ---------- left panel (route details) ----------
+function showRouteDetails(lines, summaryText) {
+  const summary = $("summary");
   const list = $("list");
+  const section = $("routeSection"); 
+
+  if (!summary || !list || !section) return;
+
+  summary.textContent = summaryText;
   list.innerHTML = "";
-  lines.forEach(([title, sub]) => {
+
+  for (const [title, sub] of lines) {
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `<div><b>${title}</b></div><div class="small">${sub}</div>`;
     list.appendChild(div);
-  });
-  $("details").hidden = false;
+  }
+
+  section.hidden = false; // could hide later if we wanted to add a "Get Directions button on map"
 }
 
+// ---------- right panel (station details) ----------
+function openStationPanel(station) {
+  const nameEl = $("stationName");
+  const bikesEl = $("stationBikes");
+  const standsEl = $("stationStands");
+  const capFill = $("stationCapacityFill");
+  const capPct = $("stationCapacityPct");
+
+  if (nameEl) nameEl.textContent = station.name || "Station";
+  if (bikesEl) bikesEl.textContent = station.available_bikes ?? "—";
+  if (standsEl) standsEl.textContent = station.available_bike_stands ?? "—";
+
+  const bikes = Number(station.available_bikes ?? 0);
+  const total = Number(station.bike_stands ?? 0);
+  const pct = total > 0 ? Math.round((bikes / total) * 100) : 0;
+
+  if (capFill) capFill.style.width = `${pct}%`;
+  if (capPct) capPct.textContent = `${pct}%`;
+
+  // enable right column + show panel
+  document.body.classList.add("station-open");
+}
+
+function closeStationPanel() {
+  // remove right column + hide panel
+  document.body.classList.remove("station-open");
+}
+
+// ---------- stations ----------
 async function getStations() {
   const r = await fetch("/api/stations");
   if (!r.ok) throw new Error("Failed to load stations");
@@ -43,6 +93,8 @@ async function getStations() {
 
 function addStations(stations) {
   clearMarkers();
+
+  // Optional: single shared InfoWindow (can keep or remove later)
   const info = new google.maps.InfoWindow();
 
   stations.forEach(s => {
@@ -50,6 +102,7 @@ function addStations(stations) {
     const marker = new google.maps.Marker({ map, position: pos, title: s.name });
 
     marker.addListener("click", () => {
+      // show info bubble (optional)
       info.setContent(
         `<div style="font-family:system-ui">
           <b>${s.name}</b><br>
@@ -59,13 +112,16 @@ function addStations(stations) {
         </div>`
       );
       info.open({ map, anchor: marker });
+
+      // show the right station panel
+      openStationPanel(s);
     });
 
     stationMarkers.push(marker);
   });
 }
 
-// Google encoded polyline decoder
+// ---------- polyline drawing ----------
 function decodePolyline(encoded) {
   let i = 0, lat = 0, lng = 0;
   const path = [];
@@ -111,17 +167,7 @@ function drawLine(encoded, kind) {
   return path;
 }
 
-function durToSec(d) {
-  if (!d) return 0;
-  const s = String(d).trim();
-  if (!s.endsWith("s")) return 0;
-  return Math.round(parseFloat(s.slice(0, -1)) || 0);
-}
-
-function secToMin(s) {
-  return Math.round(s / 60);
-}
-
+// ---------- routing ----------
 async function fetchRoute(start, destination) {
   const r = await fetch("/api/route", {
     method: "POST",
@@ -137,7 +183,10 @@ async function fetchRoute(start, destination) {
 async function onGo() {
   setError("");
   clearRoutes();
-  $("details").hidden = true;
+
+  // Hide previous route section if present
+  const routeSection = $("routeSection");
+  if (routeSection) routeSection.hidden = true;
 
   if (!startPlace?.geometry || !destPlace?.geometry) {
     setError("Pick start and destination from the dropdown suggestions.");
@@ -159,7 +208,7 @@ async function onGo() {
       path.forEach(p => bounds.extend(p));
 
       const secs = durToSec(data.route.duration);
-      showDetails(
+      showRouteDetails(
         [["Walk to destination", `${secToMin(secs)} min`]],
         `${secToMin(secs)} min`
       );
@@ -173,7 +222,7 @@ async function onGo() {
       const s2 = durToSec(data.legs.cycleBetweenStations.duration);
       const s3 = durToSec(data.legs.walkToDestination.duration);
 
-      showDetails(
+      showRouteDetails(
         [
           ["Walk to station", `${secToMin(s1)} min`],
           [`Depart station bikes: ${data.stationA.available_bikes ?? 0}`, data.stationA.name],
@@ -191,25 +240,42 @@ async function onGo() {
   }
 }
 
+// ---------- init ----------
 function initAutocomplete() {
+  const startEl = $("start");
+  const destEl = $("dest");
+  const goBtn = $("go");
+
+  if (!startEl || !destEl || !goBtn) {
+    console.error("Missing required DOM elements (#start, #dest, #go).");
+    return;
+  }
+
   const opts = { fields: ["geometry", "name", "formatted_address"] };
-  const a = new google.maps.places.Autocomplete($("start"), opts);
-  const b = new google.maps.places.Autocomplete($("dest"), opts);
+  const a = new google.maps.places.Autocomplete(startEl, opts);
+  const b = new google.maps.places.Autocomplete(destEl, opts);
 
   a.addListener("place_changed", () => (startPlace = a.getPlace()));
   b.addListener("place_changed", () => (destPlace = b.getPlace()));
 
-  $("go").addEventListener("click", onGo);
+  goBtn.addEventListener("click", onGo);
+
+  // Right panel close button (if present)
+  const closeBtn = $("closeStationPanel");
+  if (closeBtn) closeBtn.addEventListener("click", closeStationPanel);
 }
 
 function initMap() {
-  map = new google.maps.Map($("map"), { center: { lat: 53.35, lng: -6.266 }, zoom: 12 });
+  map = new google.maps.Map($("map"), {
+    center: { lat: 53.35, lng: -6.266 },
+    zoom: 12
+  });
 
   initAutocomplete();
 
   getStations()
     .then(addStations)
-    .catch(err => console.error(err));
+    .catch(err => console.error("Stations load failed:", err));
 }
 
 window.initMap = initMap;

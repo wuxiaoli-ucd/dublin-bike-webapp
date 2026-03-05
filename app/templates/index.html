@@ -1,34 +1,216 @@
  <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- if we want to view on mobile for some reason -->
   <title>Dublin Bikes</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
-  <aside>
-    <h1>Directions</h1>
+  <!-- Header -->
+  <header id="topbar">
+    <div id="topbar-left">
+      <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
 
-    <label>Start</label>
-    <input id="start" placeholder="Start..." />
+      <div id="brand">
+        <span id="brand-icon" aria-hidden="true">🚲</span>
+        <span id="brand-name">Dublin Bikes</span>
+      </div>
+    </div>
 
-    <label>Destination</label>
-    <input id="dest" placeholder="Destination..." />
+    <div id="topbar-right">
+      <!-- Weather summary (populated by JS later) -->
+      <div id="weatherSummary">
+        <span id="weatherText">Weather: —</span>
+        <span id="tempText">Temperature: —</span>
+      </div>
+    </div>
+  </header>
 
-    <button id="go">Get directions</button>
+  <!-- App Layout -->
+  <div id="app">
+    <!-- Left Panel -->
+    <aside id="leftPanel">
+      <!-- Directions -->
+      <section id="directionsSection">
+        <div class="section-title">
+          <h1>Directions</h1>
+        </div>
 
-    <p id="error"></p>
+        <div class="field">
+          <label for="start">Pick Location</label>
+          <input id="start" placeholder="Choose starting point..." autocomplete="off" />
+        </div>
 
-    <section id="details" hidden>
-      <h2>Route</h2>
-      <div id="summary"></div>
-      <div id="list"></div>
-    </section>
-  </aside>
+        <div class="field">
+          <label for="dest">Destination</label>
+          <input id="dest" placeholder="Choose destination..." autocomplete="off" />
+        </div>
 
-  <div id="map"></div>
+        <!-- Leave now / depart at (UI only for now) -->
+        <div id="departControls">
+          <button id="leaveNow" type="button" class="seg active">Leave Now</button>
+          <button id="departAt" type="button" class="seg">Depart At</button>
+        </div>
 
+        <!-- Placeholder time input (hidden until Depart At is implemented) -->
+        <div id="departTimeWrap" hidden>
+          <label for="departTime">Depart time</label>
+          <input id="departTime" type="time" />
+        </div>
+
+        <button id="go" type="button">Get Directions</button>
+
+        <p id="error" role="alert" aria-live="polite"></p>
+      </section>
+
+      <!-- Route Details -->
+      <section id="routeSection" hidden>
+        <h2>Route Details</h2>
+
+        <div id="routeSummaryRow">
+          <span id="summary">—</span>
+        </div>
+
+        <!-- Populated by JS with steps -->
+        <div id="list"></div>
+      </section>
+
+      <!-- Weather Forecast (placeholder card) -->
+      <section id="weatherSection">
+        <h2>Weather Forecast</h2>
+
+        <div id="weatherForecast">
+          <!-- Populate later from weather table -->
+          <div class="forecast-slot">
+            <div class="forecast-title">Now</div>
+            <div class="forecast-icon">☁️</div>
+            <div class="forecast-temp">—°</div>
+            <div class="forecast-meta">—</div>
+          </div>
+
+          <div class="forecast-slot">
+            <div class="forecast-title">Now + 1hr</div>
+            <div class="forecast-icon">—</div>
+            <div class="forecast-temp">—°</div>
+            <div class="forecast-meta">—</div>
+          </div>
+
+          <div class="forecast-slot">
+            <div class="forecast-title">Now + 2hrs</div>
+            <div class="forecast-icon">—</div>
+            <div class="forecast-temp">—°</div>
+            <div class="forecast-meta">—</div>
+          </div>
+
+          <div class="forecast-slot">
+            <div class="forecast-title">Now + 3hrs</div>
+            <div class="forecast-icon">—</div>
+            <div class="forecast-temp">—°</div>
+            <div class="forecast-meta">—</div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Map -->
+    <main id="mapWrap">
+      <div id="map" aria-label="Map"></div>
+    </main>
+
+    <!-- Right Panel (Station Drawer) - hidden until station selected -->
+    <aside id="rightPanel">
+      <div id="stationHeader">
+        <div id="stationHeaderLeft">
+          <h2 id="stationName">Station</h2>
+        </div>
+        <button id="closeStationPanel" type="button" aria-label="Close station panel">✕</button>
+      </div>
+
+      <!-- Current Availability -->
+      <section id="stationCurrent">
+        <h3>Current Availability</h3>
+
+        <div class="statGrid">
+          <div class="statCard">
+            <div class="statLabel">Available bikes</div>
+            <div class="statValue" id="stationBikes">—</div>
+            <div class="statHint">bikes ready</div>
+          </div>
+
+          <div class="statCard">
+            <div class="statLabel">Available bike stands</div>
+            <div class="statValue" id="stationStands">—</div>
+            <div class="statHint">stands free</div>
+          </div>
+        </div>
+
+        <div class="barRow">
+          <div class="barLabel">Station Capacity</div>
+          <div class="bar">
+            <div class="barFill" id="stationCapacityFill" style="width:0%"></div>
+          </div>
+          <div class="barPct" id="stationCapacityPct">—%</div>
+        </div>
+      </section>
+
+      <!-- Predicted Availability -->
+      <section id="stationPredicted">
+        <h3>Predicted Availability</h3>
+        <div class="sections">Next 7 days forecast</div>
+
+        <div class="toggleRow">
+          <button type="button" class="seg active" data-chart="predicted" data-mode="days">Days</button>
+          <button type="button" class="seg" data-chart="predicted" data-mode="hours">Hours</button>
+        </div>
+
+        <!-- chart placeholder -->
+        <div class="chartBox" id="predictedChart">
+          <div class="chartPlaceholder">Predicted chart goes here</div>
+        </div>
+
+        <div class="legend">
+          <span class="dot blue"></span><span>Available</span>
+          <span class="dot red"></span><span>Free bike stands</span>
+        </div>
+      </section>
+
+      <!-- Historical Availability -->
+      <section id="stationHistorical">
+        <h3>Historical Availability</h3>
+        <div class="sections">Past 7 days data</div>
+
+        <div class="toggleRow">
+          <button type="button" class="seg active" data-chart="historical" data-mode="days">Days</button>
+          <button type="button" class="seg" data-chart="historical" data-mode="hours">Hours</button>
+        </div>
+
+        <!-- chart placeholder -->
+        <div class="chartBox" id="historicalChart">
+          <div class="chartPlaceholder">Historical chart goes here</div>
+        </div>
+
+        <div class="legend">
+          <span class="dot green"></span><span>Available</span>
+          <span class="dot orange"></span><span>Free bike stands</span>
+        </div>
+      </section>
+
+      <!-- Peak Hours -->
+      <section id="stationPeak">
+        <h3>Peak Hours</h3>
+        <div class="callout" id="peakHoursText">
+          Highest demand: — 
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Core JS (bootstrap + google map init) -->
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+  <!-- Google Maps JS + Places -->
   <script
     src="https://maps.googleapis.com/maps/api/js?key={{ apikey }}&libraries=places&callback=initMap"
     async defer></script>

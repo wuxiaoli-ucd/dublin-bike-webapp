@@ -8,7 +8,7 @@ from app.services.stations_repo import fetch_stations_with_latest_availability
 routing_bp = Blueprint("routing", __name__)
 
 
-K_CANDIDATES = 10 # number of candidate closest stations 
+K_CANDIDATES = 5 # number of candidate closest stations, has a fair impact on route gen time (had set to 10 before and can take up to 7 seconds)
 MIN_SAVING_SECONDS = 30  # amount of time faster in order to choose bike
 
 

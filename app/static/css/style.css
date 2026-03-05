@@ -1,36 +1,314 @@
-html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+:root{
+  /* ---- not sure how we want the theme, so we can change these! ---- */
+  --primary: #0047AB;
+  --primary-dark: #000080;
+  --secondary: #82C8E5;
+  --neutral: #6D8196;
 
-body { display: flex; height: 100vh; }
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --text: #111111;
 
-aside {
-  width: 320px;
-  padding: 12px;
-  border-right: 1px solid #e6e6e6;
-  box-sizing: border-box;
-  overflow: auto;
+  --border-color: #000000;
+
+  /* layout */
+  --left: 360px;
+  --right: 360px;
+  --top: 56px;
+  --gap: 12px;
+
+  /* borders */
+  --border: 1px solid var(--border-color);
 }
 
-#map { flex: 1; }
+*{ box-sizing: border-box; } /* width includes padding and border */
 
-h1 { margin: 0 0 12px; font-size: 18px; }
-h2 { margin: 12px 0 8px; font-size: 16px; }
+html, body{
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background: var(--bg);
+}
 
-label { display: block; margin-top: 10px; font-size: 14px; }
+/* --- top header --- */
+#topbar{
+  height: var(--top);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gap);
+  background: var(--primary-dark);
+  border-bottom: var(--border);
+  color: #fff;
+}
 
-input, button {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px;
-  margin-top: 6px;
+#topbar-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#btnMenu{
+  width: 40px;
+  height: 40px;
+  border: var(--border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+#brand{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#brand-name{
+  font-weight: 700;
+  color: #fff;
+}
+
+#weatherSummary{
+  display: flex;
+  gap: 12px;
   font-size: 14px;
+  color: #fff;
 }
 
-button { cursor: pointer; }
+/* --- main layout --- */
+#app{
+  height: calc(100vh - var(--top));
+  display: grid;
+  grid-template-columns: var(--left) 1fr; /* only two columns by default */
+}
 
-#error { color: #b91c1c; margin: 10px 0 0; min-height: 1.2em; }
+/* panels */
+#rightPanel{
+  display: none;       /* removes it from layout completely */
+}
 
-#details { margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px; }
+body.station-open #app{
+  grid-template-columns: var(--left) 1fr var(--right);
+}
 
-.item { padding: 8px 0; border-top: 1px solid #f2f2f2; }
-.item:first-child { border-top: none; }
-.small { color: #666; font-size: 13px; }
+body.station-open #rightPanel{
+  display: block;      /* now it exists and takes the right column */
+}
+
+#leftPanel, #rightPanel{
+  padding: var(--gap);
+  overflow: auto;
+  background: var(--panel);
+}
+
+#leftPanel{
+  border-right: 2px solid var(--primary);
+}
+
+#rightPanel{
+  border-left: 2px solid var(--primary);
+}
+
+/* map area */
+#mapWrap{ background: var(--bg); }
+#map{ height: 100%; width: 100%; }
+
+/* --- basic typography --- */
+h1, h2, h3{ margin: 0 0 10px 0; }
+h1, h2, h3{ color: var(--primary-dark); }
+
+.section-title{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- form elements --- */
+.field{ margin-bottom: 10px; }
+
+label{
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--neutral);
+  font-size: 14px;
+  background: var(--panel);
+  color: var(--text);
+}
+
+/* main action button */
+#go{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--primary-dark);
+  font-size: 14px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* generic buttons (menu, close, etc) */
+button{
+  cursor: pointer;
+}
+
+/* segmented controls (depart at buttons etc.) */
+#departControls, .toggleRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.seg{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.seg.active{
+  background: var(--primary-dark);
+  color: #fff;
+  border-color: var(--primary-dark);
+}
+
+/* errors */
+#error{
+  min-height: 1.2em;
+  margin: 8px 0 0 0;
+  color: #b00000;
+}
+
+/* route list */
+#routeSection{
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--secondary);
+}
+
+.item{
+  padding: 8px 0;
+  border-top: 1px solid var(--secondary);
+}
+
+.item:first-child{ border-top: none; }
+
+.small{
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+/* --- right panel blocks --- */
+#stationHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--secondary);
+}
+
+#closeStationPanel{
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+}
+
+.sections{
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+/* stats */
+.statGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.statCard{
+  border: 1px solid var(--neutral);
+  padding: 10px;
+  background: var(--panel);
+}
+
+.statLabel{ font-size: 13px; color: var(--neutral); }
+.statValue{ font-size: 22px; font-weight: 700; margin: 6px 0; color: var(--primary-dark); }
+.statHint{ font-size: 12px; color: var(--neutral); }
+
+/* capacity bar */
+.barRow{
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 3fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.bar{
+  height: 10px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+}
+
+.barFill{
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+}
+
+/* chart placeholders */
+.chartBox{
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  padding: 12px;
+  margin-top: 10px;
+  min-height: 140px;
+}
+
+.chartPlaceholder{
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+/* legends */
+.legend{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+.dot{
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border: 1px solid var(--neutral);
+}
+
+.dot.blue{background-color: blue;}
+.dot.red{background-color: red;}
+.dot.green{background-color: green;}
+.dot.orange{background-color: orange;}
+
+.callout{
+  border: 1px solid var(--secondary);
+  background: var(--panel);
+  padding: 10px;
+  margin-top: 10px;
+}
