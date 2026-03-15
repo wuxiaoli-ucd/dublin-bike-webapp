@@ -1,6 +1,6 @@
 from flask import Flask
 from dotenv import load_dotenv
-
+load_dotenv()
 from .config import Config
 from .routes.routing import routing_bp
 from .routes.pages import pages_bp
@@ -11,8 +11,6 @@ from .routes.stations_historical_data import historical_data_bp
 
 
 def create_app():
-    load_dotenv()
-
     app = Flask(__name__)
     app.config.from_object(Config)
 
@@ -26,24 +24,5 @@ def create_app():
 
     # app.register_blueprint(weather_bp) --Andrew
 
-    @app.route('/')
-    def root():
-        return """
-            <h2>Available Endpoints</h2>
-            <ul>
-                <li><a href="/stations">All Stations</a></li>
-                <li>Single Station Example:
-                    <a href="/availability/1">/availability/1</a>
-                </li>
-                <li>
-                    Hourly (8h) Test Mode:
-                    <a href="/availability/1/hourly">/availability/1/hourly</a>
-                </li>
-                <li>
-                    Daily (7d) Test Mode:
-                    <a href="/availability/1/daily">/availability/1/daily</a>
-                </li>
-            </ul>
-        """
 
     return app
