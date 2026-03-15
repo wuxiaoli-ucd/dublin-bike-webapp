@@ -57,6 +57,9 @@ function showRouteDetails(lines, summaryText) {
 
 // ---------- right panel (station details) ----------
 function openStationPanel(station) {
+  //lily add
+  setCurrentStation(station);
+
   const nameEl = $("stationName");
   const bikesEl = $("stationBikes");
   const standsEl = $("stationStands");
@@ -76,6 +79,9 @@ function openStationPanel(station) {
 
   // enable right column + show panel
   document.body.classList.add("station-open");
+
+  // lily add
+  loadHistoricalChart(station, getHistoricalMode());
 }
 
 function closeStationPanel() {
@@ -115,6 +121,7 @@ function addStations(stations) {
 
       // show the right station panel
       openStationPanel(s);
+
     });
 
     stationMarkers.push(marker);
@@ -272,6 +279,8 @@ function initMap() {
   });
 
   initAutocomplete();
+  //lily add: historical
+  initHistoricalToggle();
 
   getStations()
     .then(addStations)
@@ -279,3 +288,6 @@ function initMap() {
 }
 
 window.initMap = initMap;
+
+
+

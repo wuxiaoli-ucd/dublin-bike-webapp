@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- if we want to view on mobile for some reason -->
   <title>Dublin Bikes</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+ <!-- lily add: for historical chart -->
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -179,7 +181,8 @@
       <!-- Historical Availability -->
       <section id="stationHistorical">
         <h3>Historical Availability</h3>
-        <div class="sections">Past 7 days data</div>
+         <!--lily revised-->
+        <div class="sections" id="historySubtitle">Past 7 days data</div>
 
         <div class="toggleRow">
           <button type="button" class="seg active" data-chart="historical" data-mode="days">Days</button>
@@ -188,7 +191,8 @@
 
         <!-- chart placeholder -->
         <div class="chartBox" id="historicalChart">
-          <div class="chartPlaceholder">Historical chart goes here</div>
+            <!-- lily changed here -->
+          <div class="chartPlaceholder"><canvas id="historicalCanvas"></canvas></div>
         </div>
 
         <div class="legend">
@@ -206,6 +210,9 @@
       </section>
     </aside>
   </div>
+
+   <!-- lily add: for historical chart -->
+  <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
 
   <!-- Core JS (bootstrap + google map init) -->
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
