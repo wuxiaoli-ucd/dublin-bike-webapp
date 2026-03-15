@@ -6,7 +6,6 @@ from .routes.routing import routing_bp
 from .routes.pages import pages_bp
 from .routes.stations_api import stations_bp
 from .routes.stations_historical_data import historical_data_bp
-from .routes.pages_historical_chart import pages_historical_bp
 
 # from .routes.weather import weather_bp
 
@@ -24,7 +23,6 @@ def create_app():
 
     # lily's historical chart related blueprints
     app.register_blueprint(historical_data_bp)
-    app.register_blueprint(pages_historical_bp)
 
     # app.register_blueprint(weather_bp) --Andrew
 
