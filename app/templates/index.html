@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- if we want to view on mobile for some reason -->
   <title>Dublin Bikes</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
- <!-- lily add: for historical chart -->
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="icon" href="../static/images/favicon.ico" type="image/x-icon">
 </head>
 
 <body>
@@ -16,7 +15,7 @@
       <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
 
       <div id="brand">
-        <span id="brand-icon" aria-hidden="true">🚲</span>
+        <img id="brand-icon" src="{{ url_for('static', filename='images/bike.png') }}" alt="Bike Logo"></img>
         <span id="brand-name">Dublin Bikes</span>
       </div>
     </div>
@@ -30,90 +29,59 @@
     </div>
   </header>
 
+  <!-- floating toggle buttons -->
+  <div id="panelToggleBar">
+    <button id="toggleDirections" class="toggle-btn active" type="button">
+      Directions
+    </button>
+    <button id="toggleWeather" class="toggle-btn active" type="button">
+      Weather
+    </button>
+  </div>
+
   <!-- App Layout -->
   <div id="app">
-    <!-- Left Panel -->
+  <!-- Left Panel -->
     <aside id="leftPanel">
-      <!-- Directions -->
-      <section id="directionsSection">
-        <div class="section-title">
-          <h1>Directions</h1>
-        </div>
-
-        <div class="field">
-          <label for="start">Pick Location</label>
-          <input id="start" placeholder="Choose starting point..." autocomplete="off" />
-        </div>
-
-        <div class="field">
-          <label for="dest">Destination</label>
-          <input id="dest" placeholder="Choose destination..." autocomplete="off" />
-        </div>
-
-        <!-- Leave now / depart at (UI only for now) -->
-        <div id="departControls">
-          <button id="leaveNow" type="button" class="seg active">Leave Now</button>
-          <button id="departAt" type="button" class="seg">Depart At</button>
-        </div>
-
-        <!-- Placeholder time input (hidden until Depart At is implemented) -->
-        <div id="departTimeWrap" hidden>
-          <label for="departTime">Depart time</label>
-          <input id="departTime" type="time" />
-        </div>
-
-        <button id="go" type="button">Get Directions</button>
-
-        <p id="error" role="alert" aria-live="polite"></p>
-      </section>
-
-      <!-- Route Details -->
-      <section id="routeSection" hidden>
-        <h2>Route Details</h2>
-
-        <div id="routeSummaryRow">
-          <span id="summary">—</span>
-        </div>
-
-        <!-- Populated by JS with steps -->
-        <div id="list"></div>
-      </section>
-
-      <!-- Weather Forecast (placeholder card) -->
-      <section id="weatherSection">
-        <h2>Weather Forecast</h2>
-
-        <div id="weatherForecast">
-          <!-- Populate later from weather table -->
-          <div class="forecast-slot">
-            <div class="forecast-title">Now</div>
-            <div class="forecast-icon">☁️</div>
-            <div class="forecast-temp">—°</div>
-            <div class="forecast-meta">—</div>
+      <div id="leftPanelContent">
+        <section id="directionsBlock">
+          <div class="field">
+            <label for="start">Pick Location</label>
+            <input id="start" placeholder="Choose starting point..." autocomplete="off" />
           </div>
 
-          <div class="forecast-slot">
-            <div class="forecast-title">Now + 1hr</div>
-            <div class="forecast-icon">—</div>
-            <div class="forecast-temp">—°</div>
-            <div class="forecast-meta">—</div>
+          <div class="field">
+            <label for="dest">Destination</label>
+            <input id="dest" placeholder="Choose destination..." autocomplete="off" />
           </div>
 
-          <div class="forecast-slot">
-            <div class="forecast-title">Now + 2hrs</div>
-            <div class="forecast-icon">—</div>
-            <div class="forecast-temp">—°</div>
-            <div class="forecast-meta">—</div>
+          <div id="departControls">
+            <button id="leaveNow" type="button" class="seg active">Leave Now</button>
+            <button id="departAt" type="button" class="seg">Depart At</button>
           </div>
 
-          <div class="forecast-slot">
-            <div class="forecast-title">Now + 3hrs</div>
-            <div class="forecast-icon">—</div>
-            <div class="forecast-temp">—°</div>
-            <div class="forecast-meta">—</div>
-          </div>
-        </div>
-      </section>
+          <button id="go" type="button">Get Directions</button>
+
+          <p id="error" role="alert" aria-live="polite"></p>
+
+          <section id="routeSection" hidden>
+            <h2>Route Details</h2>
+            <div id="routeSummaryRow">
+              <span id="summary">—</span>
+            </div>
+            <div id="list"></div>
+          </section>
+        </section>
+
+        <section id="weatherBlock">
+          <section id="weatherSection">
+            <h2>Weather Forecast</h2>
+            <div id="weatherForecast">
+              <p>Weather forecast coming soon.</p>
+            </div>
+          </section>
+        </section>
+      </div>
     </aside>
 
     <!-- Map -->
@@ -191,8 +159,7 @@
 
         <!-- chart placeholder -->
         <div class="chartBox" id="historicalChart">
-            <!-- lily changed here -->
-          <div class="chartPlaceholder"><canvas id="historicalCanvas"></canvas></div>
+          <canvas id="historicalCanvas"></canvas>
         </div>
 
         <div class="legend">
@@ -211,10 +178,11 @@
     </aside>
   </div>
 
+  
    <!-- lily add: for historical chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
-
-  <!-- Core JS (bootstrap + google map init) -->
+  
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
   <!-- Google Maps JS + Places -->

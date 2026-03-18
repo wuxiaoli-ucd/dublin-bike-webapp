@@ -1,7 +1,9 @@
-from .db import get_conn
+from sqlalchemy import text
+from .db import engine
 
-def fetch_stations_with_latest_availability(cfg):
-    sql = """
+
+def fetch_stations_with_latest_availability():
+    sql = text("""
     SELECT
       s.number,
       s.name,
@@ -24,23 +26,24 @@ def fetch_stations_with_latest_availability(cfg):
       ON latest.number = a1.number AND latest.max_scraped_at = a1.scraped_at
     ) a
     ON a.number = s.number
-    """
-    conn = get_conn(cfg)
-    with conn.cursor() as cur:
-        cur.execute(sql)
-        rows = cur.fetchall()
-    conn.close()
+    """)
 
-    stations = []
-    for r in rows:
-        stations.append({
+    with engine.connect() as conn:
+        rows = conn.execute(sql).mappings().all()
+
+    return [
+        {
             "number": r["number"],
             "name": r["name"],
-            "position": {"lat": float(r["position_lat"]), "lng": float(r["position_lng"])},
-            "available_bikes": r.get("available_bikes"),
-            "available_bike_stands": r.get("available_bike_stands"),
-            "bike_stands": r.get("bike_stands"),
-            "status": r.get("status"),
-            "scraped_at": r.get("scraped_at"),
-        })
-    return stations
+            "position": {
+                "lat": float(r["position_lat"]),
+                "lng": float(r["position_lng"]),
+            },
+            "available_bikes": r["available_bikes"],
+            "available_bike_stands": r["available_bike_stands"],
+            "bike_stands": r["bike_stands"],
+            "status": r["status"],
+            "scraped_at": r["scraped_at"],
+        }
+        for r in rows
+    ]

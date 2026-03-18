@@ -1,7 +1,7 @@
 :root{
   /* ---- not sure how we want the theme, so we can change these! ---- */
   --primary: #0047AB;
-  --primary-dark: #000080;
+  --primary-dark: #0b0b70;
   --secondary: #82C8E5;
   --neutral: #6D8196;
 
@@ -38,7 +38,7 @@ html, body{
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--gap);
-  background: var(--primary-dark);
+  background: var(--primary);
   border-bottom: var(--border);
   color: #fff;
 }
@@ -46,7 +46,7 @@ html, body{
 #topbar-left{
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 }
 
 #btnMenu{
@@ -60,8 +60,14 @@ html, body{
 
 #brand{
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+}
+
+#brand-icon {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
 }
 
 #brand-name{
@@ -78,24 +84,26 @@ html, body{
 
 /* --- main layout --- */
 #app{
+  position: relative;
   height: calc(100vh - var(--top));
   display: grid;
-  grid-template-columns: var(--left) 1fr; /* only two columns by default */
+  grid-template-columns: var(--left) 1fr; 
 }
 
-/* panels */
-#rightPanel{
-  display: none;       /* removes it from layout completely */
+/* state modifiers */
+body.left-hidden #app{
+  grid-template-columns: 1fr;
 }
 
 body.station-open #app{
   grid-template-columns: var(--left) 1fr var(--right);
 }
 
-body.station-open #rightPanel{
-  display: block;      /* now it exists and takes the right column */
+body.left-hidden.station-open #app{
+  grid-template-columns: 1fr var(--right);
 }
 
+/* panels */
 #leftPanel, #rightPanel{
   padding: var(--gap);
   overflow: auto;
@@ -103,12 +111,52 @@ body.station-open #rightPanel{
 }
 
 #leftPanel{
+  padding: 75px 12px 12px 12px;
+  overflow: auto;
+  background: var(--panel);
   border-right: 2px solid var(--primary);
 }
 
 #rightPanel{
   border-left: 2px solid var(--primary);
+  display: none;       /* removes it from layout completely */
 }
+
+body.station-open #rightPanel{
+  display: block;      /* now it exists and takes the right column */
+}
+
+body.left-hidden #leftPanel{
+  display: none;
+}
+
+/* toggle buttons */
+#panelToggleBar{
+  position: absolute;
+  top: calc(var(--top) + 8px);
+  left: 60px;
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+}
+
+
+/* buttons */
+.toggle-btn{
+  padding: 16px 24px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.toggle-btn.active{
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 
 /* map area */
 #mapWrap{ background: var(--bg); }
@@ -245,9 +293,22 @@ button{
   background: var(--panel);
 }
 
-.statLabel{ font-size: 13px; color: var(--neutral); }
-.statValue{ font-size: 22px; font-weight: 700; margin: 6px 0; color: var(--primary-dark); }
-.statHint{ font-size: 12px; color: var(--neutral); }
+.statLabel{ 
+  font-size: 13px; 
+  color: var(--neutral); 
+}
+
+.statValue{ 
+  font-size: 22px; 
+  font-weight: 700; 
+  margin: 6px 0; 
+  color: var(--primary-dark); 
+}
+
+.statHint{ 
+  font-size: 12px; 
+  color: var(--neutral); 
+}
 
 /* capacity bar */
 .barRow{
@@ -276,13 +337,13 @@ button{
   background: var(--panel);
   padding: 12px;
   margin-top: 10px;
-  min-height: 140px;
+  height: 260px; /* important */
 }
 
-.chartPlaceholder{
-  font-size: 13px;
-  color: var(--neutral);
-  height: 260px;
+#historicalCanvas{
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* legends */
@@ -314,8 +375,3 @@ button{
   margin-top: 10px;
 }
 
-/* historical bar - lily */
-#historicalCanvas{
-  width:100%;
-  height:100%;
-}

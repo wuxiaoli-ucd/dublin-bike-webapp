@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app
+import os
+from flask import Blueprint, render_template
 
 pages_bp = Blueprint("pages", __name__)
 
@@ -6,4 +7,4 @@ pages_bp = Blueprint("pages", __name__)
 def index():
     """Executes when a HTTP GET request hits route (/)"""
     # Frontend key separate from backend Routes key
-    return render_template("index.html", apikey=current_app.config["MAPS_JS_API_KEY"])
+    return render_template("index.html", apikey=os.getenv("MAPS_JS_API_KEY"))

@@ -35,6 +35,47 @@ function secToMin(s) {
 }
 
 // ---------- left panel (route details) ----------
+let showDirections = true;
+let showWeather = true;
+
+function updateLeftPanelVisibility() {
+  const directionsBlock = $("directionsBlock");
+  const weatherBlock = $("weatherBlock");
+  const directionsBtn = $("toggleDirections");
+  const weatherBtn = $("toggleWeather");
+
+  if (directionsBlock) directionsBlock.hidden = !showDirections;
+  if (weatherBlock) weatherBlock.hidden = !showWeather;
+
+  if (directionsBtn) directionsBtn.classList.toggle("active", showDirections);
+  if (weatherBtn) weatherBtn.classList.toggle("active", showWeather);
+
+  const nothingSelected = !showDirections && !showWeather;
+  document.body.classList.toggle("left-hidden", nothingSelected);
+}
+
+function initPanelToggles() {
+  const directionsBtn = $("toggleDirections");
+  const weatherBtn = $("toggleWeather");
+
+  if (directionsBtn) {
+    directionsBtn.addEventListener("click", () => {
+      showDirections = !showDirections;
+      updateLeftPanelVisibility();
+    });
+  }
+
+  if (weatherBtn) {
+    weatherBtn.addEventListener("click", () => {
+      showWeather = !showWeather;
+      updateLeftPanelVisibility();
+    });
+  }
+
+  updateLeftPanelVisibility();
+}
+
+
 function showRouteDetails(lines, summaryText) {
   const summary = $("summary");
   const list = $("list");
@@ -275,10 +316,16 @@ function initAutocomplete() {
 function initMap() {
   map = new google.maps.Map($("map"), {
     center: { lat: 53.35, lng: -6.266 },
-    zoom: 12
-  });
+    zoom: 14,
+
+    mapTypeControl: true,
+    mapTypeControlOptions: {
+    position: google.maps.ControlPosition.BOTTOM_LEFT, 
+  }
+});
 
   initAutocomplete();
+  initPanelToggles();
   //lily add: historical
   initHistoricalToggle();
 

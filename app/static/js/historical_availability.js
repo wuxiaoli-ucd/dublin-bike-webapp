@@ -5,9 +5,9 @@ let historicalMode = "days";
 // lily add: fetch historical data from flask
 async function fetchHistoricalData(stationId, mode) {
   const endpoint =
-    mode === "hours"
-      ? `/availability/${stationId}/hourly`
-      : `/availability/${stationId}/daily`;
+  mode === "hours"
+    ? `/api/availability/${stationId}/hourly`
+    : `/api/availability/${stationId}/daily`;
 
   const r = await fetch(endpoint);
   if (!r.ok) {

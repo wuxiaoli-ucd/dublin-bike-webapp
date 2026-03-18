@@ -46,7 +46,7 @@ def compute_route(origin: dict, destination: dict, travel_mode: str, *, timeout:
     route = routes[0]
     polyline = (route.get("polyline") or {}).get("encodedPolyline")
 
-    # Guard against incomplete payloads even with field mask
+    # guard against incomplete payloads even with field mask
     if polyline is None or "distanceMeters" not in route or "duration" not in route:
         return None
 

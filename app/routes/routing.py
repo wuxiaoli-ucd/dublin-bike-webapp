@@ -8,7 +8,7 @@ from app.services.stations_repo import fetch_stations_with_latest_availability
 routing_bp = Blueprint("routing", __name__)
 
 
-K_CANDIDATES = 5 # number of candidate closest stations, has a fair impact on route gen time (had set to 10 before and can take up to 7 seconds)
+K_CANDIDATES = 10 # number of candidate closest stations, has a fair impact on route gen time (10 seems to be the best compromise)
 MIN_SAVING_SECONDS = 30  # amount of time faster in order to choose bike
 
 
@@ -92,7 +92,7 @@ def route():
     direct_walk_s = duration_to_seconds(direct_walk["duration"])
 
     # 2) Load stations (latest availability)
-    stations = fetch_stations_with_latest_availability(current_app.config)
+    stations = fetch_stations_with_latest_availability()
 
     # 3) Build candidate lists (haversine shortlist, then filter by availability)
     depart_candidates = [
