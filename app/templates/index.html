@@ -12,10 +12,10 @@
   <!-- Header -->
   <header id="topbar">
     <div id="topbar-left">
-      <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
+      
 
       <div id="brand">
-        <img id="brand-icon" src="{{ url_for('static', filename='images/bike.png') }}" alt="Bike Logo"></img>
+        <img id="brand-icon" src="{{ url_for('static', filename='images/red_bike_icon.png') }}" alt="Bike Logo"></img>
         <span id="brand-name">Dublin Bikes</span>
       </div>
     </div>
@@ -25,6 +25,7 @@
       <div id="weatherSummary">
         <span id="weatherText">Weather: —</span>
         <span id="tempText">Temperature: —</span>
+        <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
       </div>
     </div>
   </header>
@@ -178,11 +179,12 @@
     </aside>
   </div>
 
-  
+  <div id="stationTooltip" class="stationTooltip" hidden></div>
+
    <!-- lily add: for historical chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
-  
+  <script src="{{ url_for('static', filename='js/station_markers.js') }}"></script>
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
   <!-- Google Maps JS + Places -->

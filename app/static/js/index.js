@@ -2,20 +2,21 @@ let map;
 let startPlace = null;
 let destPlace = null;
 
-let stationMarkers = [];
 let routeLines = [];
+let routeMarkers = [];
 
 const $ = (id) => document.getElementById(id); // shortcut
 
 // ---------- helpers ----------
-function clearMarkers() {
-  stationMarkers.forEach(m => m.setMap(null));
-  stationMarkers = [];
-}
-
 function clearRoutes() {
   routeLines.forEach(l => l.setMap(null));
   routeLines = [];
+  clearRouteMarkers();
+}
+
+function clearRouteMarkers() {
+  routeMarkers.forEach(m => m.setMap(null));
+  routeMarkers = [];
 }
 
 function setError(msg = "") {
@@ -34,9 +35,20 @@ function secToMin(s) {
   return Math.round(s / 60);
 }
 
+// const STATION_REFRESH_MS = 15000;
+
+// async function refreshStations() {
+//   try {
+//     const stations = await getStations();
+//     addStations(stations);
+//   } catch (err) {
+//     console.error("Station refresh failed:", err);
+//   }
+// }
+
 // ---------- left panel (route details) ----------
-let showDirections = true;
-let showWeather = true;
+let showDirections = false;
+let showWeather = false;
 
 function updateLeftPanelVisibility() {
   const directionsBlock = $("directionsBlock");
@@ -93,7 +105,7 @@ function showRouteDetails(lines, summaryText) {
     list.appendChild(div);
   }
 
-  section.hidden = false; // could hide later if we wanted to add a "Get Directions button on map"
+  section.hidden = false; 
 }
 
 // ---------- right panel (station details) ----------
@@ -139,33 +151,8 @@ async function getStations() {
 }
 
 function addStations(stations) {
-  clearMarkers();
-
-  // Optional: single shared InfoWindow (can keep or remove later)
-  const info = new google.maps.InfoWindow();
-
-  stations.forEach(s => {
-    const pos = { lat: s.position.lat, lng: s.position.lng };
-    const marker = new google.maps.Marker({ map, position: pos, title: s.name });
-
-    marker.addListener("click", () => {
-      // show info bubble (optional)
-      info.setContent(
-        `<div style="font-family:system-ui">
-          <b>${s.name}</b><br>
-          Bikes: ${s.available_bikes ?? 0} / ${s.bike_stands ?? 0}<br>
-          Stands: ${s.available_bike_stands ?? 0}<br>
-          Status: ${s.status ?? "?"}
-        </div>`
-      );
-      info.open({ map, anchor: marker });
-
-      // show the right station panel
-      openStationPanel(s);
-
-    });
-
-    stationMarkers.push(marker);
+  renderStations(map, stations, (station) => {
+    openStationPanel(station);
   });
 }
 
@@ -193,26 +180,62 @@ function decodePolyline(encoded) {
 function drawLine(encoded, kind) {
   const path = decodePolyline(encoded);
 
-  const line =
-    kind === "WALK"
-      ? new google.maps.Polyline({
-          map,
-          path,
-          strokeOpacity: 0,
-          icons: [{
-            icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 3 },
-            offset: "0",
-            repeat: "12px"
-          }]
-        })
-      : new google.maps.Polyline({
-          map,
-          path,
-          strokeWeight: 5
-        });
+  let line;
+
+  if (kind === "WALK") {
+    line = new google.maps.Polyline({
+      map,
+      path,
+      strokeOpacity: 0,
+      icons: [{
+        icon: {
+          path: "M 0,-1 0,1",
+          strokeOpacity: 1,
+          strokeColor: "#2563eb",
+          scale: 3
+        },
+        offset: "0",
+        repeat: "10px"
+      }]
+    });
+  } else if (kind === "BIKE") {
+    line = new google.maps.Polyline({
+      map,
+      path,
+      strokeColor: "#dc2626",
+      strokeOpacity: 1,
+      strokeWeight: 5
+    });
+  } else {
+    line = new google.maps.Polyline({
+      map,
+      path,
+      strokeOpacity: 1,
+      strokeWeight: 5
+    });
+  }
 
   routeLines.push(line);
   return path;
+}
+
+function addRouteDot(position, kind = "start") {
+  const marker = new google.maps.Marker({
+    map,
+    position,
+    zIndex: 1000,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: kind === "start" ? "#2563eb" : "#dc2626",
+      fillOpacity: 1,
+      strokeColor: "#ffffff",
+      strokeWeight: 3,
+      scale: 8
+    }
+  });
+
+  routeMarkers.push(marker);
+  return marker;
 }
 
 // ---------- routing ----------
@@ -255,16 +278,23 @@ async function onGo() {
       const path = drawLine(data.route.polyline, "WALK");
       path.forEach(p => bounds.extend(p));
 
+      addRouteDot(start, "start");
+      addRouteDot(destination, "end");
+
       const secs = durToSec(data.route.duration);
       showRouteDetails(
         [["Walk to destination", `${secToMin(secs)} min`]],
         `${secToMin(secs)} min`
       );
+      
     } else {
       const p1 = drawLine(data.legs.walkToStation.polyline, "WALK");
       const p2 = drawLine(data.legs.cycleBetweenStations.polyline, "BIKE");
       const p3 = drawLine(data.legs.walkToDestination.polyline, "WALK");
       [...p1, ...p2, ...p3].forEach(p => bounds.extend(p));
+
+      addRouteDot(start, "start");
+      addRouteDot(destination, "end");
 
       const s1 = durToSec(data.legs.walkToStation.duration);
       const s2 = durToSec(data.legs.cycleBetweenStations.duration);
@@ -319,6 +349,7 @@ function initMap() {
     zoom: 14,
 
     mapTypeControl: true,
+    fullscreenControl: false,
     mapTypeControlOptions: {
     position: google.maps.ControlPosition.BOTTOM_LEFT, 
   }
@@ -328,10 +359,15 @@ function initMap() {
   initPanelToggles();
   //lily add: historical
   initHistoricalToggle();
+  initStationMarkers(map);
+
+  updateLeftPanelVisibility();
 
   getStations()
     .then(addStations)
     .catch(err => console.error("Stations load failed:", err));
+
+  //setInterval(refreshStations, STATION_REFRESH_MS);
 }
 
 window.initMap = initMap;
