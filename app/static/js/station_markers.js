@@ -1,4 +1,4 @@
-let markersById = new Map();
+let markersById = new Map(); // stores key value pairs of current markers by station ID
 let tooltipEl = null;
 let mapRef = null;
 
@@ -7,13 +7,15 @@ function initStationMarkers(mapInstance) {
   tooltipEl = document.getElementById("stationTooltip");
 }
 
+// synchronise UI markers with backend
 function renderStations(mapInstance, stations, onStationClick) {
-  const seen = new Set();
+  const seen = new Set(); // collection of unique values i.e., which stations are present in most recent api call
 
   stations.forEach((station) => {
     const stationId = station.number;
     seen.add(stationId);
 
+    // better for performance to update marker rather destroy and create
     if (markersById.has(stationId)) {
       updateMarker(markersById.get(stationId), station);
     } else {
@@ -22,6 +24,7 @@ function renderStations(mapInstance, stations, onStationClick) {
     }
   });
 
+  // gets rid of old markers if not currently relevant, basically real time
   for (const [stationId, markerObj] of markersById.entries()) {
     if (!seen.has(stationId)) {
       markerObj.marker.setMap(null);
@@ -129,15 +132,18 @@ function buildTooltipContent(station) {
   `;
 }
 
+// centres tooltip above marker on hover
 function positionTooltipAbove(event) {
   if (!tooltipEl || !event || !event.domEvent) return;
 
   const padding = 12;
   const markerOffsetY = 18;
 
-  const mouseX = event.domEvent.clientX;
+    // mouse postion on screen
+  const mouseX = event.domEvent.clientX; 
   const mouseY = event.domEvent.clientY;
 
+    // measuring tooltip size
   const rect = tooltipEl.getBoundingClientRect();
 
   let left = mouseX - rect.width / 2;
@@ -177,6 +183,7 @@ function clearAllStationMarkers() {
   hideStationTooltip();
 }
 
+// global functions
 window.initStationMarkers = initStationMarkers;
 window.renderStations = renderStations;
 window.clearAllStationMarkers = clearAllStationMarkers;

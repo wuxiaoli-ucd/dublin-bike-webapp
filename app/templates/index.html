@@ -21,7 +21,6 @@
     </div>
 
     <div id="topbar-right">
-      <!-- Weather summary (populated by JS later) -->
       <div id="weatherSummary">
         <span id="weatherText">Weather: —</span>
         <span id="tempText">Temperature: —</span>
@@ -181,7 +180,6 @@
 
   <div id="stationTooltip" class="stationTooltip" hidden></div>
 
-   <!-- lily add: for historical chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
   <script src="{{ url_for('static', filename='js/station_markers.js') }}"></script>

@@ -328,8 +328,22 @@ function initAutocomplete() {
     console.error("Missing required DOM elements (#start, #dest, #go).");
     return;
   }
+  
+  // only suggest Dublin locations
+  const dublinBounds = {
+  north: 53.41,
+  south: 53.30,
+  west: -6.40,
+  east: -6.10
+  };
 
-  const opts = { fields: ["geometry", "name", "formatted_address"] };
+  const opts = {
+  fields: ["geometry", "name", "formatted_address"],
+  componentRestrictions: { country: "ie" },
+  bounds: dublinBounds,
+  strictBounds: false
+  };
+
   const a = new google.maps.places.Autocomplete(startEl, opts);
   const b = new google.maps.places.Autocomplete(destEl, opts);
 
