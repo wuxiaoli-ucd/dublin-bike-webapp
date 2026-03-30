@@ -13,18 +13,30 @@
   <header id="topbar">
     <div id="topbar-left">
       
-
       <div id="brand">
-        <img id="brand-icon" src="{{ url_for('static', filename='images/red_bike_icon.png') }}" alt="Bike Logo"></img>
+        <img id="brand-icon" src="{{ url_for('static', filename='images/red_bike_icon.png') }}" alt="Bike Logo">
         <span id="brand-name">Dublin Bikes</span>
       </div>
     </div>
 
     <div id="topbar-right">
       <div id="weatherSummary">
-        <span id="weatherText">Weather: —</span>
-        <span id="tempText">Temperature: —</span>
+        <span id="weatherText">
+          <span class="label">Weather:</span>
+          <span class="value">—</span>
+          </span>
+
+        <span id="tempText">
+          <span class="label">Temp:</span>
+          <span class="value">—</span>
+        </span>
+
         <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
+        <div id="menuDropdown" hidden>
+          <div class="menuItem">🚴 Total cycled: <span id="kmValue">0</span> km</div>
+          <div class="menuItem">🌱 Total CO2 saved: <span id="co2Value">0</span> kg</div>
+          <div class="menuItem">🚲 Total trips: <span id="trips">0</span></div>
+        </div>
       </div>
     </div>
   </header>
@@ -45,14 +57,14 @@
     <aside id="leftPanel">
       <div id="leftPanelContent">
         <section id="directionsBlock">
-          <div class="field">
-            <label for="start">Pick Location</label>
+          <div class="inputWrap">
             <input id="start" placeholder="Choose starting point..." autocomplete="off" />
+            <button class="clearInput" data-target="start" type="button">✕</button>
           </div>
 
-          <div class="field">
-            <label for="dest">Destination</label>
+          <div class="inputWrap">
             <input id="dest" placeholder="Choose destination..." autocomplete="off" />
+            <button class="clearInput" data-target="dest" type="button">✕</button>
           </div>
 
           <div id="departControls">
@@ -74,12 +86,12 @@
         </section>
 
         <section id="weatherBlock">
-          <section id="weatherSection">
-            <h2>Weather Forecast</h2>
-            <div id="weatherForecast">
-              <p>Weather forecast coming soon.</p>
-            </div>
+          <section id="weatherSection" class="weather-card">
+            <h2 class="title">Weather Forecast</h2>
+            <div id="weatherForecast" class="forecast-grid" aria-live="polite"></div>
+            <p id="weatherUpdated" class="update-time">Updating weather…</p>
           </section>
+        </section>
         </section>
       </div>
     </aside>
@@ -183,6 +195,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
   <script src="{{ url_for('static', filename='js/station_markers.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
   <!-- Google Maps JS + Places -->

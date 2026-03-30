@@ -5,6 +5,9 @@ let destPlace = null;
 let routeLines = [];
 let routeMarkers = [];
 
+let stationRefreshTimer = null;
+const STATION_REFRESH_MS = 60000;
+
 const $ = (id) => document.getElementById(id); // shortcut
 
 // ---------- helpers ----------
@@ -35,16 +38,72 @@ function secToMin(s) {
   return Math.round(s / 60);
 }
 
-// const STATION_REFRESH_MS = 15000;
 
-// async function refreshStations() {
-//   try {
-//     const stations = await getStations();
-//     addStations(stations);
-//   } catch (err) {
-//     console.error("Station refresh failed:", err);
-//   }
-// }
+async function refreshStations() {
+  try {
+    const stations = await getStations();
+    addStations(stations);
+  } catch (err) {
+    console.error("Station refresh failed:", err);
+  }
+}
+
+function refreshOpenStationPanel(stations) {
+  if (!document.body.classList.contains("station-open")) return;
+  if (!currentStation) return;
+
+  const updated = stations.find(s => s.number === currentStation.number);
+  if (!updated) return;
+
+  setCurrentStation(updated);
+
+  const nameEl = $("stationName");
+  const bikesEl = $("stationBikes");
+  const standsEl = $("stationStands");
+  const capFill = $("stationCapacityFill");
+  const capPct = $("stationCapacityPct");
+
+  if (nameEl) nameEl.textContent = updated.name || "Station";
+  if (bikesEl) bikesEl.textContent = updated.available_bikes ?? "—";
+  if (standsEl) standsEl.textContent = updated.available_bike_stands ?? "—";
+
+  const bikes = Number(updated.available_bikes ?? 0);
+  const total = Number(updated.bike_stands ?? 0);
+  const pct = total > 0 ? Math.round((bikes / total) * 100) : 0;
+
+  if (capFill) capFill.style.width = `${pct}%`;
+  if (capPct) capPct.textContent = `${pct}%`;
+}
+
+
+// ---------- top right menu button ----------
+let totalKmCycled = 0;
+const CO2_KG_PER_KM_CAR = 0.14;
+let totalCo2Saved = 0;
+let totalTrips = 0;
+
+const menuBtn = $("btnMenu");
+const dropdown = $("menuDropdown");
+
+menuBtn.addEventListener("click", () => {
+  dropdown.hidden = !dropdown.hidden;
+});
+
+function updateKmDisplay() {
+  const el = $("kmValue");
+  if (el) el.textContent = totalKmCycled.toFixed(1);
+}
+
+function updateCo2Display() {
+  const el = $("co2Value");
+  if (el) el.textContent = totalCo2Saved.toFixed(2);
+}
+
+function updateTripsDisplay() {
+  const el = $("trips");
+  if (el) el.textContent = totalTrips;
+}
+
 
 // ---------- left panel (route details) ----------
 let showDirections = false;
@@ -73,6 +132,15 @@ function initPanelToggles() {
   if (directionsBtn) {
     directionsBtn.addEventListener("click", () => {
       showDirections = !showDirections;
+
+      if (!showDirections) {
+        clearRoutes();
+
+      const routeSection = $("routeSection");
+      if (routeSection) routeSection.hidden = true;
+
+      setError("");
+    }
       updateLeftPanelVisibility();
     });
   }
@@ -87,6 +155,16 @@ function initPanelToggles() {
   updateLeftPanelVisibility();
 }
 
+function getStepIcon(title) {
+  const t = title.toLowerCase();
+
+  if (t.includes("walk")) return "/static/images/walk.png";
+  if (t.includes("cycle")) return "/static/images/red_bike_icon.png";
+  if (t.includes("depart station")) return "/static/images/start_station.png";
+  if (t.includes("arrival station")) return "/static/images/end_station.png";
+
+  return "/static/images/default_step.png";
+}
 
 function showRouteDetails(lines, summaryText) {
   const summary = $("summary");
@@ -101,11 +179,23 @@ function showRouteDetails(lines, summaryText) {
   for (const [title, sub] of lines) {
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML = `<div><b>${title}</b></div><div class="small">${sub}</div>`;
+
+    const iconSrc = getStepIcon(title);
+
+    div.innerHTML = `
+      <div class="route-row">
+        <img class="route-icon" src="${iconSrc}" alt="">
+        <div class="route-text">
+          <div class="route-title">${title}</div>
+          <div class="small">${sub}</div>
+        </div>
+      </div>
+    `;
+
     list.appendChild(div);
   }
 
-  section.hidden = false; 
+  section.hidden = false;
 }
 
 // ---------- right panel (station details) ----------
@@ -133,13 +223,13 @@ function openStationPanel(station) {
   // enable right column + show panel
   document.body.classList.add("station-open");
 
-  // lily add
   loadHistoricalChart(station, getHistoricalMode());
 }
 
 function closeStationPanel() {
   // remove right column + hide panel
   document.body.classList.remove("station-open");
+  if (window.clearSelectedStation) clearSelectedStation();
 }
 
 // ---------- stations ----------
@@ -254,7 +344,7 @@ async function fetchRoute(start, destination) {
 async function onGo() {
   setError("");
   clearRoutes();
-
+  closeStationPanel()
   // Hide previous route section if present
   const routeSection = $("routeSection");
   if (routeSection) routeSection.hidden = true;
@@ -299,7 +389,12 @@ async function onGo() {
       const s1 = durToSec(data.legs.walkToStation.duration);
       const s2 = durToSec(data.legs.cycleBetweenStations.duration);
       const s3 = durToSec(data.legs.walkToDestination.duration);
-
+      
+      
+      console.log("route response", data);
+      console.log("bike meters", data.legs?.cycleBetweenStations?.distanceMeters);
+      
+      
       showRouteDetails(
         [
           ["Walk to station", `${secToMin(s1)} min`],
@@ -310,6 +405,25 @@ async function onGo() {
         ],
         `${secToMin(data.totals?.durationSeconds ?? 0)} min`
       );
+      
+      if (data.mode === "BIKESHARE") {
+        const cycleKm = (data.legs.cycleBetweenStations.distanceMeters ?? 0) / 1000;
+        totalKmCycled += cycleKm;
+        updateKmDisplay();
+
+        totalTrips += 1;
+        updateTripsDisplay();
+
+        const totalMeters =
+          (data.legs.walkToStation.distanceMeters ?? 0) +
+          (data.legs.cycleBetweenStations.distanceMeters ?? 0) +
+          (data.legs.walkToDestination.distanceMeters ?? 0);
+
+        const totalKmJourney = totalMeters / 1000;
+        totalCo2Saved += totalKmJourney * CO2_KG_PER_KM_CAR;
+        updateCo2Display();
+      }
+
     }
 
     map.fitBounds(bounds);
@@ -352,6 +466,27 @@ function initAutocomplete() {
 
   goBtn.addEventListener("click", onGo);
 
+  document.querySelectorAll(".clearInput").forEach(btn => {
+  const targetId = btn.dataset.target;
+  const input = document.getElementById(targetId);
+
+  if (!input) return;
+
+  // show/hide X depending on content
+  input.addEventListener("input", () => {
+    btn.style.display = input.value ? "block" : "none";
+  });
+
+  // clear on click
+  btn.addEventListener("click", () => {
+    input.value = "";
+    btn.style.display = "none";
+
+    if (targetId === "start") startPlace = null;
+    if (targetId === "dest") destPlace = null;
+    });
+  });
+
   // Right panel close button (if present)
   const closeBtn = $("closeStationPanel");
   if (closeBtn) closeBtn.addEventListener("click", closeStationPanel);
@@ -371,7 +506,6 @@ function initMap() {
 
   initAutocomplete();
   initPanelToggles();
-  //lily add: historical
   initHistoricalToggle();
   initStationMarkers(map);
 
@@ -381,10 +515,11 @@ function initMap() {
     .then(addStations)
     .catch(err => console.error("Stations load failed:", err));
 
-  //setInterval(refreshStations, STATION_REFRESH_MS);
+  if (!stationRefreshTimer) {
+    stationRefreshTimer = setInterval(refreshStations, STATION_REFRESH_MS);
+  }
 }
 
 window.initMap = initMap;
-
 
 

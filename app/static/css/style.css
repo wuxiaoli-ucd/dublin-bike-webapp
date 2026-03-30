@@ -69,7 +69,7 @@ html, body{
 #topbar-right {
   display: flex;
   align-items: center; 
-  gap: 12px;             
+  gap: 15px;             
 }
 
 #weatherSummary{
@@ -90,6 +90,45 @@ html, body{
   cursor: pointer;
   color: var(--bg);
   font-size: 22px;
+}
+
+#weatherSummary .label {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+#weatherSummary .value {
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+#weatherText,
+#tempText {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+#menuDropdown {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  width: 200px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  padding: 10px;
+  z-index: 2000;
+}
+
+body.station-open #menuDropdown {
+  right: var(--right); 
+}
+
+#menuDropdown .menuItem {
+  color: #111;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 /* --- main layout --- */
@@ -125,6 +164,35 @@ body.left-hidden.station-open #app{
   overflow: auto;
   background: var(--panel);
   border-right: 2px solid var(--primary);
+}
+
+
+.inputWrap {
+  position: relative;
+}
+
+.inputWrap input {
+  width: 100%;
+  padding-right: 36px; /* space for the X */
+}
+
+.clearInput {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+
+  display: none; /* hidden by default */
+}
+
+.clearInput:hover {
+  color: #000;
 }
 
 #rightPanel{
@@ -247,19 +315,38 @@ button{
   color: #b00000;
 }
 
-/* route list */
-#routeSection{
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--secondary);
-}
-
 .item{
-  padding: 8px 0;
+  padding: 12px 0;
   border-top: 1px solid var(--secondary);
 }
 
-.item:first-child{ border-top: none; }
+.item:first-child{
+  border-top: none;
+}
+
+.route-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.route-icon{
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.route-text{
+  display: flex;
+  flex-direction: column;
+}
+
+.route-title{
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
 
 .small{
   font-size: 13px;
@@ -421,4 +508,83 @@ button{
   margin-top: 6px;
   font-size: 12px;
   color: #666;
+}
+
+/* --- weather widget --- */
+#weatherBlock{
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+}
+
+#weatherSection{
+  background: var(--primary-dark);
+  color: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+#weatherSection h2,
+#weatherSection .title{
+  margin: 0 0 16px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+#weatherForecast{
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--primary);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+  padding: 18px 10px;
+  overflow-x: auto;
+}
+
+#weatherForecast .column{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 62px;
+}
+
+#weatherForecast .time-label{
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+#weatherForecast .weather-icon{
+  width: 42px;
+  height: 42px;
+  margin: 4px 0 8px 0;
+  display: block;
+}
+
+#weatherForecast .temp{
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+#weatherForecast .stat{
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8fd3ff;
+}
+
+#weatherUpdated,
+.update-time{
+  margin: 14px 0 0 0;
+  font-size: 11px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
 }
