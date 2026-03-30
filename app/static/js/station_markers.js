@@ -1,11 +1,30 @@
 let markersById = new Map(); // stores key value pairs of current markers by station ID
 let tooltipEl = null;
 let mapRef = null;
+let selectedStationId = null;
 
 function initStationMarkers(mapInstance) {
   mapRef = mapInstance;
   tooltipEl = document.getElementById("stationTooltip");
 }
+
+// helper functions
+function setSelectedStation(stationId) {
+  selectedStationId = stationId;
+  refreshMarkerStyles();
+}
+
+function clearSelectedStation() {
+  selectedStationId = null;
+  refreshMarkerStyles();
+}
+
+function refreshMarkerStyles() {
+  for (const [stationId, markerObj] of markersById.entries()) {
+    markerObj.marker.setIcon(buildMarkerIcon(markerObj.station, stationId === selectedStationId));
+  }
+}
+
 
 // synchronise UI markers with backend
 function renderStations(mapInstance, stations, onStationClick) {
@@ -60,6 +79,7 @@ function createMarker(mapInstance, station, onStationClick) {
 
   marker.addListener("click", () => {
     hideStationTooltip();
+    setSelectedStation(station.number);
     onStationClick(station);
   });
 
@@ -83,17 +103,17 @@ function updateMarker(markerObj, station) {
     fontSize: "12px"
   });
 
-  markerObj.marker.setIcon(buildMarkerIcon(station));
+  markerObj.marker.setIcon(buildMarkerIcon(station, station.number === selectedStationId));
 }
 
-function buildMarkerIcon(station) {
+function buildMarkerIcon(station, isSelected = false) {
   return {
     path: google.maps.SymbolPath.CIRCLE,
     fillColor: getMarkerColor(station),
     fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 2,
-    scale: 16
+    strokeColor: isSelected ? "#111111" : "#ffffff",
+    strokeWeight: isSelected ? 4 : 2,
+    scale: isSelected ? 20 : 16
   };
 }
 
