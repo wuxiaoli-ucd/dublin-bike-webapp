@@ -1,5 +1,5 @@
 :root{
-  /* ---- not sure how we want the theme, so we can change these! ---- */
+  /* ---- theme ---- */
   --primary: #0047AB;
   --primary-dark: #0b0b70;
   --secondary: #82C8E5;
@@ -156,13 +156,13 @@ body.left-hidden.station-open #app{
 #leftPanel, #rightPanel{
   padding: var(--gap);
   overflow: auto;
-  background: var(--panel);
+  background: #f5f9fe;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 #leftPanel{
   padding: 75px 12px 12px 12px;
   overflow: auto;
-  background: var(--panel);
   border-right: 2px solid var(--primary);
 }
 
@@ -512,9 +512,8 @@ button{
 
 /* --- weather widget --- */
 #weatherBlock{
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
+  margin-top: 18px;
+  position: static;
 }
 
 #weatherSection{

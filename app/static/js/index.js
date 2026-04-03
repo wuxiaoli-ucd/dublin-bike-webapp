@@ -77,10 +77,10 @@ function refreshOpenStationPanel(stations) {
 
 
 // ---------- top right menu button ----------
-let totalKmCycled = 0;
+let totalKmCycled = Number(localStorage.getItem("totalKmCycled") || 0);
 const CO2_KG_PER_KM_CAR = 0.14;
-let totalCo2Saved = 0;
-let totalTrips = 0;
+let totalTrips = Number(localStorage.getItem("totalTrips") || 0);
+let totalCo2Saved = Number(localStorage.getItem("totalCo2Saved") || 0);
 
 const menuBtn = $("btnMenu");
 const dropdown = $("menuDropdown");
@@ -92,16 +92,39 @@ menuBtn.addEventListener("click", () => {
 function updateKmDisplay() {
   const el = $("kmValue");
   if (el) el.textContent = totalKmCycled.toFixed(1);
-}
-
-function updateCo2Display() {
-  const el = $("co2Value");
-  if (el) el.textContent = totalCo2Saved.toFixed(2);
+  localStorage.setItem("totalKmCycled", totalKmCycled);
 }
 
 function updateTripsDisplay() {
   const el = $("trips");
-  if (el) el.textContent = totalTrips;
+  if (el) el.textContent = String(totalTrips);
+  localStorage.setItem("totalTrips", totalTrips);
+}
+
+function updateCo2Display() {
+  const el = $("co2Value");
+  if (el) el.textContent = totalCo2Saved.toFixed(1);
+  localStorage.setItem("totalCo2Saved", totalCo2Saved);
+}
+
+// helper to show on page load
+function initStatsDisplay() {
+  updateKmDisplay();
+  updateTripsDisplay();
+  updateCo2Display();
+}
+
+// will reset stats before final display
+function resetStats() {
+  totalKmCycled = 0;
+  totalTrips = 0;
+  totalCo2Saved = 0;
+
+  localStorage.removeItem("totalKmCycled");
+  localStorage.removeItem("totalTrips");
+  localStorage.removeItem("totalCo2Saved");
+
+  initStatsDisplay();
 }
 
 
@@ -508,7 +531,7 @@ function initMap() {
   initPanelToggles();
   initHistoricalToggle();
   initStationMarkers(map);
-
+  initStatsDisplay()
   updateLeftPanelVisibility();
 
   getStations()
@@ -518,8 +541,19 @@ function initMap() {
   if (!stationRefreshTimer) {
     stationRefreshTimer = setInterval(refreshStations, STATION_REFRESH_MS);
   }
+
+  // click anywhere to get rid of menu
+  document.addEventListener("click", (e) => {
+    const menu = $("menuDropdown");
+    const btn = $("btnMenu");
+    if (!menu || menu.hidden) return;
+
+    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.hidden = true;
+    }
+  });
 }
 
 window.initMap = initMap;
 
-
+window.resetStats = resetStats;
