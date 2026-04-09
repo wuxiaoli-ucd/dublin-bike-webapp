@@ -23,8 +23,8 @@ function renderHistoricalChart(data, mode) {
   if (!canvas) return;
 
   const labels = data.series.map(d => formatLabel(d.bucket, mode));
-  const bikes = data.series.map(item => Number(item.avg_bikes ?? 0));
-  const stands = data.series.map(item => Number(item.avg_stands ?? 0));
+  const bikes = data.series.map(item => Math.round(Number(item.avg_bikes ?? 0)));
+  const stands = data.series.map(item => Math.round(Number(item.avg_stands ?? 0)));
 
   if (historicalChart) {
     historicalChart.destroy();
@@ -122,6 +122,11 @@ function getHistoricalMode() {
   return historicalMode;
 }
 
+function getCurrentStation() {
+  return currentStation;
+}
+
+window.getCurrentStation = getCurrentStation;
 window.initHistoricalToggle = initHistoricalToggle;
 window.loadHistoricalChart = loadHistoricalChart;
 window.setCurrentStation = setCurrentStation;

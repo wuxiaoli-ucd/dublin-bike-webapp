@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+from datetime import datetime, timezone, timedelta
 
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 # Dublin city centre
@@ -68,3 +69,43 @@ def get_forecast():
         }
         for item in hourly
     ]
+
+
+def get_prediction_weather(target_dt: datetime):
+    """
+    Gets forecast data
+    Finds closest time match
+    Translates to model features
+    """
+    
+    data = _fetch_weather()
+    hourly = data.get("hourly", [])
+
+    if not hourly:
+        raise ValueError("No hourly forecast data available")
+
+    if target_dt.tzinfo is None:
+        target_dt = target_dt.replace(tzinfo=timezone.utc).astimezone()
+
+    now_local = datetime.now().astimezone()
+    if target_dt < now_local:
+        raise ValueError("Prediction datetime must be in the future")
+
+    if target_dt > now_local + timedelta(days=3):
+        raise ValueError("Predictions are only available up to 3 days ahead")
+
+    best_match = None
+    best_diff = None
+
+    for item in hourly:
+        forecast_dt = datetime.fromtimestamp(item["dt"], tz=timezone.utc).astimezone()
+        diff = abs((forecast_dt - target_dt).total_seconds())
+
+        if best_diff is None or diff < best_diff:
+            best_diff = diff
+            best_match = item
+
+    return {
+        "avg_air_temperature": float(best_match["temp"]),
+        "avg_relative_humidity": float(best_match["humidity"]),
+    }

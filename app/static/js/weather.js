@@ -19,7 +19,7 @@ async function updateWeatherStatus() {
     console.error("Status Bar Error:", err);
 
     document.getElementById("weatherText").textContent = "Weather: unavailable";
-    document.getElementById("tempText").textContent = "Temperature: —";
+    document.getElementById("tempText").textContent = "Temperature: N/A";
   }
 }
 

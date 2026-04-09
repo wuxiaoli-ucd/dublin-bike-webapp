@@ -178,16 +178,139 @@ function initPanelToggles() {
   updateLeftPanelVisibility();
 }
 
+// Depart at -------
+let departureMode = "leave_now";
+
+function formatDateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateLabel(date) {
+  const weekday = date.toLocaleDateString("en-IE", { weekday: "long" });
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${weekday} ${day}/${month}/${year}`;
+}
+
+function populateDepartDays() {
+  const select = $("departDay");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  const today = new Date();
+
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+
+    const option = document.createElement("option");
+    option.value = formatDateValue(d);
+    option.textContent = formatDateLabel(d);
+    select.appendChild(option);
+  }
+}
+
+function setDefaultDepartTime() {
+  const input = $("departTime");
+  if (!input) return;
+
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+
+  minutes = Math.ceil(minutes / 15) * 15;
+
+  if (minutes === 60) {
+    minutes = 0;
+    hours += 1;
+  }
+
+  if (hours >= 24) {
+    hours = 23;
+    minutes = 45;
+  }
+
+  input.value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function setDepartureMode(mode) {
+  const leaveNowBtn = $("leaveNow");
+  const departAtBtn = $("departAt");
+  const options = $("departAtOptions");
+
+  departureMode = mode;
+
+  if (mode === "leave_now") {
+    leaveNowBtn.classList.add("active");
+    departAtBtn.classList.remove("active");
+    options.classList.add("hidden");
+  } else {
+    departAtBtn.classList.add("active");
+    leaveNowBtn.classList.remove("active");
+    options.classList.remove("hidden");
+  }
+}
+
+function getDepartureSelection() {
+  if (departureMode === "leave_now") {
+    return {
+      mode: "leave_now",
+      date: null,
+      time: null
+    };
+  }
+
+  const date = $("departDay")?.value || null;
+  const time = $("departTime")?.value || null;
+
+  return {
+    mode: "depart_at",
+    date,
+    time
+  };
+}
+
+function initDepartControls() {
+  const leaveNowBtn = $("leaveNow");
+  const departAtBtn = $("departAt");
+
+  if (!leaveNowBtn || !departAtBtn) return;
+
+  populateDepartDays();
+  setDefaultDepartTime();
+  setDepartureMode("leave_now");
+
+  leaveNowBtn.addEventListener("click", function () {
+    setDepartureMode("leave_now");
+  });
+
+  departAtBtn.addEventListener("click", function () {
+    setDepartureMode("depart_at");
+  });
+}
+
+// -------------
+
 function getStepIcon(title) {
   const t = title.toLowerCase();
 
   if (t.includes("walk")) return "/static/images/walk.png";
   if (t.includes("cycle")) return "/static/images/red_bike_icon.png";
-  if (t.includes("depart station")) return "/static/images/start_station.png";
-  if (t.includes("arrival station")) return "/static/images/end_station.png";
+
+  if (t.includes("depart station") || t.includes("depart bikes"))
+    return "/static/images/start_station.png";
+
+  if (t.includes("arrival station") || t.includes("arrival docks"))
+    return "/static/images/end_station.png";
 
   return "/static/images/default_step.png";
 }
+
 
 function showRouteDetails(lines, summaryText) {
   const summary = $("summary");
@@ -247,6 +370,7 @@ function openStationPanel(station) {
   document.body.classList.add("station-open");
 
   loadHistoricalChart(station, getHistoricalMode());
+  loadPredictedChart(station, getPredictedMode());
 }
 
 function closeStationPanel() {
@@ -352,11 +476,24 @@ function addRouteDot(position, kind = "start") {
 }
 
 // ---------- routing ----------
-async function fetchRoute(start, destination) {
+  async function fetchRoute(start, destination, departureSelection) {
+  const payload = {
+    start,
+    destination,
+    departureMode: departureSelection.mode
+  };
+
+  if (departureSelection.mode === "depart_at") {
+    payload.date = departureSelection.date;
+    payload.time = departureSelection.time.length === 5
+      ? `${departureSelection.time}:00`
+      : departureSelection.time;
+  }
+
   const r = await fetch("/api/route", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ start, destination })
+    body: JSON.stringify(payload)
   });
 
   const data = await r.json().catch(() => null);
@@ -367,13 +504,23 @@ async function fetchRoute(start, destination) {
 async function onGo() {
   setError("");
   clearRoutes();
-  closeStationPanel()
-  // Hide previous route section if present
+  closeStationPanel();
+
   const routeSection = $("routeSection");
   if (routeSection) routeSection.hidden = true;
 
   if (!startPlace?.geometry || !destPlace?.geometry) {
     setError("Pick start and destination from the dropdown suggestions.");
+    return;
+  }
+
+  const departureSelection = getDepartureSelection();
+
+  if (
+    departureSelection.mode === "depart_at" &&
+    (!departureSelection.date || !departureSelection.time)
+  ) {
+    setError("Please choose a departure day and time.");
     return;
   }
 
@@ -383,7 +530,7 @@ async function onGo() {
   const destination = { lat: d.lat(), lng: d.lng() };
 
   try {
-    const data = await fetchRoute(start, destination);
+    const data = await fetchRoute(start, destination, departureSelection);
 
     const bounds = new google.maps.LatLngBounds();
 
@@ -399,7 +546,7 @@ async function onGo() {
         [["Walk to destination", `${secToMin(secs)} min`]],
         `${secToMin(secs)} min`
       );
-      
+
     } else {
       const p1 = drawLine(data.legs.walkToStation.polyline, "WALK");
       const p2 = drawLine(data.legs.cycleBetweenStations.polyline, "BIKE");
@@ -412,23 +559,27 @@ async function onGo() {
       const s1 = durToSec(data.legs.walkToStation.duration);
       const s2 = durToSec(data.legs.cycleBetweenStations.duration);
       const s3 = durToSec(data.legs.walkToDestination.duration);
-      
-      
+
       console.log("route response", data);
       console.log("bike meters", data.legs?.cycleBetweenStations?.distanceMeters);
-      
-      
+
       showRouteDetails(
         [
           ["Walk to station", `${secToMin(s1)} min`],
-          [`Depart station bikes: ${data.stationA.available_bikes ?? 0}`, data.stationA.name],
+          [departureSelection.mode === "depart_at"
+              ? `Predicted depart bikes: ${data.stationA.predicted_bikes ?? 0}`
+              : `Depart station bikes: ${data.stationA.available_bikes ?? 0}`,
+            data.stationA.name],
           ["Cycle", `${secToMin(s2)} min`],
-          [`Arrival station stands: ${data.stationB.available_bike_stands ?? 0}`, data.stationB.name],
+          [departureSelection.mode === "depart_at"
+              ? `Predicted arrival docks: ${data.stationB.predicted_docks ?? 0}`
+              : `Arrival station stands: ${data.stationB.available_bike_stands ?? 0}`,
+            data.stationB.name],
           ["Walk to destination", `${secToMin(s3)} min`]
         ],
         `${secToMin(data.totals?.durationSeconds ?? 0)} min`
       );
-      
+
       if (data.mode === "BIKESHARE") {
         const cycleKm = (data.legs.cycleBetweenStations.distanceMeters ?? 0) / 1000;
         totalKmCycled += cycleKm;
@@ -446,11 +597,11 @@ async function onGo() {
         totalCo2Saved += totalKmJourney * CO2_KG_PER_KM_CAR;
         updateCo2Display();
       }
-
     }
 
     map.fitBounds(bounds);
   } catch (err) {
+    console.error(err);
     setError(err.message || String(err));
   }
 }
@@ -491,7 +642,7 @@ function initAutocomplete() {
 
   document.querySelectorAll(".clearInput").forEach(btn => {
   const targetId = btn.dataset.target;
-  const input = document.getElementById(targetId);
+  const input = $(targetId);
 
   if (!input) return;
 
@@ -530,9 +681,11 @@ function initMap() {
   initAutocomplete();
   initPanelToggles();
   initHistoricalToggle();
+  initPredictedToggle();
   initStationMarkers(map);
   initStatsDisplay()
   updateLeftPanelVisibility();
+  initDepartControls()
 
   getStations()
     .then(addStations)
@@ -553,6 +706,7 @@ function initMap() {
     }
   });
 }
+
 
 window.initMap = initMap;
 
