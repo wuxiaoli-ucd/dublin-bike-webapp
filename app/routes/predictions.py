@@ -39,6 +39,7 @@ def predicted_hourly(station_id):
         return jsonify(data)
 
     except ValueError as e:
+        print("PREDICT DAILY VALUE ERROR:", e)
         return jsonify({"error": str(e)}), 400
 
     except Exception as e:
@@ -52,6 +53,7 @@ def predicted_daily(station_id):
         return jsonify(data)
 
     except ValueError as e:
+        print("PREDICT DAILY VALUE ERROR:", e)
         return jsonify({"error": str(e)}), 400
 
     except Exception as e:

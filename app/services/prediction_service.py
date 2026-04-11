@@ -107,13 +107,16 @@ def predict_from_strings(station_id: int, date_str: str, time_str: str) -> dict:
 MAX_PREDICTION_DAYS = 3
 
 def validate_prediction_datetime(depart_at: datetime) -> None:
+    """Date-based rather than hour-based"""
+    
     now = datetime.now()
-    max_dt = now + timedelta(days=MAX_PREDICTION_DAYS)
 
     if depart_at < now:
         raise ValueError("Prediction datetime must be in the future")
 
-    if depart_at > max_dt:
+    max_date = (now + timedelta(days=MAX_PREDICTION_DAYS)).date()
+
+    if depart_at.date() > max_date:
         raise ValueError(f"Predictions are only available up to {MAX_PREDICTION_DAYS} days ahead")
     
 

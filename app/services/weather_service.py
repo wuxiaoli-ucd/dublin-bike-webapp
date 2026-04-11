@@ -77,7 +77,6 @@ def get_prediction_weather(target_dt: datetime):
     Finds closest time match
     Translates to model features
     """
-    
     data = _fetch_weather()
     hourly = data.get("hourly", [])
 
@@ -88,24 +87,22 @@ def get_prediction_weather(target_dt: datetime):
         target_dt = target_dt.replace(tzinfo=timezone.utc).astimezone()
 
     now_local = datetime.now().astimezone()
+
     if target_dt < now_local:
         raise ValueError("Prediction datetime must be in the future")
 
-    if target_dt > now_local + timedelta(days=3):
+    max_date = (now_local + timedelta(days=3)).date()
+    if target_dt.date() > max_date:
         raise ValueError("Predictions are only available up to 3 days ahead")
 
-    best_match = None
-    best_diff = None
-
-    for item in hourly:
-        forecast_dt = datetime.fromtimestamp(item["dt"], tz=timezone.utc).astimezone()
-        diff = abs((forecast_dt - target_dt).total_seconds())
-
-        if best_diff is None or diff < best_diff:
-            best_diff = diff
-            best_match = item
+    closest_item = min(
+        hourly,
+        key=lambda item: abs(
+            datetime.fromtimestamp(item["dt"], tz=timezone.utc).astimezone() - target_dt
+        )
+    )
 
     return {
-        "avg_air_temperature": float(best_match["temp"]),
-        "avg_relative_humidity": float(best_match["humidity"]),
+        "avg_air_temperature": float(closest_item["temp"]),
+        "avg_relative_humidity": float(closest_item["humidity"]),
     }
