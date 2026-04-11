@@ -56,20 +56,19 @@ function renderHistoricalChart(data, mode) {
 
 function formatLabel(bucket, mode) {
     if (mode === "days") {
-        // bucket 例子: 2026-03-10
         const date = new Date(bucket);
-        return date.toLocaleDateString("en-IE", {day: "numeric",
-            month: "short" });
-        // 输出 Mon / Tue / Wed
+        return date.toLocaleDateString("en-IE", {
+            weekday: "short",
+            day: "numeric",
+            month: "short"
+        });
     } else {
-        // bucket 例子: 2026-03-14 13:00:00
-        const date = new Date(bucket.replace(" ", "T"));
+        const date = new Date(bucket.replace(" ", "T") + "Z");
         return date.toLocaleTimeString("en-IE", {
             hour: "numeric",
             minute: "2-digit",
             hour12: true
         });
-        // 输出 3:00 pm
     }
 }
 
