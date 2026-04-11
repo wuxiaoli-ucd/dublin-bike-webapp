@@ -1,8 +1,7 @@
 import os
-from dotenv import load_dotenv
 from app import create_app
+from app.services.db import get_db_settings
 
-load_dotenv()
 
 app = create_app()
 
@@ -14,11 +13,12 @@ if __name__ == "__main__":
 
     # when deployed in ec2, the debug turned to false for information securuty
     debug = deploy_env == "local"
+    db_settings = get_db_settings()
 
     print("Running on:", deploy_env)
     print("Host:", host)
     print("Port:", port)
-    print("DB_HOST =", app.config.get("DB_HOST"))
-    print("DB_NAME =", app.config.get("DB_NAME"))
+    print("DB_HOST =", db_settings["host"])
+    print("DB_NAME =", db_settings["db"])
  
     app.run(host=host, port=port, debug=debug)

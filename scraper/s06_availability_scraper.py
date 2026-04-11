@@ -4,7 +4,7 @@ from datetime import datetime, UTC
 import json
 from sqlalchemy import text
 import scraper.dbinfo as dbinfo
-from app.routes.db_connect import engine
+from app.services.db import engine
 
 def availability_to_db(raw_text, in_engine):
     stations = json.loads(raw_text)
