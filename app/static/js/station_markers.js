@@ -69,18 +69,20 @@ function createMarker(mapInstance, station, onStationClick) {
     icon: buildMarkerIcon(station)
   });
 
-  marker.addListener("mouseover", (event) => {
-    showStationTooltip(station, event);
-  });
+ marker.addListener("mouseover", (event) => {
+  const currentStation = markersById.get(station.number)?.station || station;
+  showStationTooltip(currentStation, event);
+ });
 
   marker.addListener("mouseout", () => {
     hideStationTooltip();
   });
 
   marker.addListener("click", () => {
+    const currentStation = markersById.get(station.number)?.station || station;
     hideStationTooltip();
-    setSelectedStation(station.number);
-    onStationClick(station);
+    setSelectedStation(currentStation.number);
+    onStationClick(currentStation);
   });
 
   return { marker, station };

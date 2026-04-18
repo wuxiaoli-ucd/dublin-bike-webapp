@@ -43,6 +43,7 @@ async function refreshStations() {
   try {
     const stations = await getStations();
     addStations(stations);
+    refreshOpenStationPanel(stations);
   } catch (err) {
     console.error("Station refresh failed:", err);
   }
@@ -73,6 +74,16 @@ function refreshOpenStationPanel(stations) {
 
   if (capFill) capFill.style.width = `${pct}%`;
   if (capPct) capPct.textContent = `${pct}%`;
+}
+
+function isFutureDeparture(dateStr, timeStr) {
+  // validate that depart at time is in the future
+  if (!dateStr || !timeStr) return false;
+
+  const selected = new Date(`${dateStr}T${timeStr}`);
+  if (isNaN(selected.getTime())) return false;
+
+  return selected.getTime() > Date.now();
 }
 
 
@@ -523,6 +534,14 @@ async function onGo() {
     setError("Please choose a departure day and time.");
     return;
   }
+
+  if (
+  departureSelection.mode === "depart_at" &&
+  !isFutureDeparture(departureSelection.date, departureSelection.time)
+) {
+  setError("Please select a future departure time.");
+  return;
+}
 
   const s = startPlace.geometry.location;
   const d = destPlace.geometry.location;

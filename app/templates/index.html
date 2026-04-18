@@ -94,6 +94,12 @@
         <section id="weatherBlock">
           <section id="weatherSection" class="weather-card">
             <h2 class="title">Weather Forecast</h2>
+            
+            <div class="weather-toggle">
+              <button id="weatherHourlyBtn" class="active" type="button">Hourly</button>
+              <button id="weatherDailyBtn" type="button">Daily</button>
+            </div>
+
             <div id="weatherForecast" class="forecast-grid" aria-live="polite"></div>
             <p id="weatherUpdated" class="update-time">Updating weather…</p>
           </section>
@@ -183,14 +189,6 @@
         <div class="legend">
           <span class="dot green"></span><span>Available</span>
           <span class="dot orange"></span><span>Free bike stands</span>
-        </div>
-      </section>
-
-      <!-- Peak Hours -->
-      <section id="stationPeak">
-        <h3>Peak Hours</h3>
-        <div class="callout" id="peakHoursText">
-          Highest demand: — 
         </div>
       </section>
     </aside>

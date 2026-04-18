@@ -500,10 +500,6 @@ button{
 .dot.green{background-color: green;}
 .dot.orange{background-color: orange;}
 
-#stationPeak{
-  padding-top: 15px;
-}
-
 .callout{
   border: 1px solid var(--secondary);
   background: var(--panel);
@@ -627,6 +623,37 @@ button{
   font-size: 11px;
   text-align: center;
   color: rgba(255, 255, 255, 0.72);
+}
+
+.weather-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.weather-toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  padding-bottom: 4px;
+}
+
+.weather-toggle button {
+  border: none;
+  background: transparent;
+  color: #dbeafe;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.weather-toggle button.active {
+  background: rgba(255,255,255,0.18);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 

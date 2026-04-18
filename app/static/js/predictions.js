@@ -18,18 +18,31 @@ async function fetchPrediction(stationId, date, time) {
     }
 }
 
-function setPredictionDateLimits() {
-    const dateInput = document.getElementById("depart-date");
-    if (!dateInput) return;
+function populateDepartDayOptions() {
+  const departDay = document.getElementById("departDay");
+  if (!departDay) return;
 
-    const today = new Date();
-    const maxDate = new Date();
-    maxDate.setDate(today.getDate() + 3);
+  departDay.innerHTML = "";
 
-    const formatDate = (d) => d.toISOString().split("T")[0];
+  const today = new Date();
 
-    dateInput.min = formatDate(today);
-    dateInput.max = formatDate(maxDate);
+  for (let i = 0; i <= 3; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+
+    const isoValue = d.toISOString().split("T")[0];
+    const label = d.toLocaleDateString("en-IE", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit"
+    });
+
+    const option = document.createElement("option");
+    option.value = isoValue;   // machine-readable value
+    option.textContent = label; // user-friendly label
+    departDay.appendChild(option);
+  }
 }
 
 
