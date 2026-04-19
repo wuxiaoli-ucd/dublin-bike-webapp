@@ -1,6 +1,6 @@
 **List of User Stories and Acceptance Criteria**
 
-The following are the user stories based on our defined features in the requirements elicitation section above. 
+
 
 **User Story 1 (Display Interactive Map):**  
 As a user, I want to see an interactive map when I open the application, so that I can explore the Dublin area visually.
