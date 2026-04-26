@@ -6,3 +6,6 @@ venv/
 .DS_Store
 .vscode/models/final_merged_data.csv
 models/bike_model.joblib
+models/final_merged_data.csv
+.vscode/
+app/.vscode/
