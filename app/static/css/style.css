@@ -526,28 +526,6 @@ button{
   display: block;
 }
 
-/* legends */
-.legend{
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 10px;
-  font-size: 13px;
-  color: var(--neutral);
-}
-
-.dot{
-  width: 10px;
-  height: 10px;
-  display: inline-block;
-  border: 1px solid var(--neutral);
-}
-
-.dot.blue{background-color: blue;}
-.dot.red{background-color: red;}
-.dot.green{background-color: green;}
-.dot.orange{background-color: orange;}
-
 .callout{
   border: 1px solid var(--secondary);
   background: var(--panel);
