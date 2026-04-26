@@ -118,6 +118,16 @@ function updateCo2Display() {
   localStorage.setItem("totalCo2Saved", totalCo2Saved);
 }
 
+const howToBtn = $("howTo");
+const howToPopup = $("howToPopup");
+
+if (howToBtn && howToPopup) {
+  howToBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    howToPopup.hidden = !howToPopup.hidden;
+  });
+}
+
 // helper to show on page load
 function initStatsDisplay() {
   updateKmDisplay();
@@ -718,10 +728,20 @@ function initMap() {
   document.addEventListener("click", (e) => {
     const menu = $("menuDropdown");
     const btn = $("btnMenu");
-    if (!menu || menu.hidden) return;
+    const help = $("howToPopup");
+    const howTo = $("howTo");
 
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+    if (menu && !menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) {
       menu.hidden = true;
+    }
+
+    if (
+      help &&
+      !help.hidden &&
+      !help.contains(e.target) &&
+      (!howTo || !howTo.contains(e.target))
+    ) {
+      help.hidden = true;
     }
   });
 }

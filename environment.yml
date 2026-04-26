@@ -1,0 +1,17 @@
+name: comp30830
+channels:
+  - defaults
+dependencies:
+  - python
+  - sqlalchemy
+  - requests
+  - ipython
+  - simplejson
+  - joblib
+  - scikit-learn
+  - matplotlib
+  - numpy
+  - pandas
+  - seaborn
+  - ipykernel
+prefix: /Users/conorwalsh/miniconda3/envs/comp30830

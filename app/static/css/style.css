@@ -122,13 +122,61 @@ html, body{
 }
 
 body.station-open #menuDropdown {
-  right: var(--right); 
+  right: calc(var(--right) + 5px); 
 }
 
 #menuDropdown .menuItem {
   color: #111;
   font-size: 14px;
   line-height: 1.4;
+}
+
+#howTo {
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#howTo:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+
+#howToPopup {
+  position: absolute;
+  top: 60px;
+  right: 215px;
+  width: 340px;
+  max-width: 40vw;
+  padding: 16px 18px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  z-index: 3000;
+}
+
+body.station-open #howToPopup {
+  right: calc(var(--right) + 210px);
+}
+
+.howToTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #1e3a8a;
+}
+
+.howToList {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+.howToList li + li {
+  margin-top: 6px;
 }
 
 /* --- main layout --- */
@@ -213,7 +261,7 @@ body.left-hidden #leftPanel{
   position: absolute;
   top: calc(var(--top) + 8px);
   left: 60px;
-  z-index: 20;
+  z-index: 4000;
   display: flex;
   gap: 12px;
 }

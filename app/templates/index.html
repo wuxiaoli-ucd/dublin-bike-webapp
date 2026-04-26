@@ -33,10 +33,22 @@
 
         <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
         <div id="menuDropdown" hidden>
-          <!-- <div class="menuItem">Guide on how to use!</div>, show a few lines on how the website works-->
+          <div id="howTo" class="menuItem">❓ How to use</div>
           <div class="menuItem">🚴 Total cycled: <span id="kmValue">0</span> km</div>
           <div class="menuItem">🌱 Total CO2 saved: <span id="co2Value">0</span> kg</div>
           <div class="menuItem">🚲 Total trips: <span id="trips">0</span></div>
+        </div>
+
+        <div id="howToPopup" hidden>
+          <div class="howToTitle">How to use</div>
+          <ol class="howToList">
+            <li>In the directions panel, enter a start point and destination using the suggestions.</li>
+            <li>Choose <strong>Leave Now</strong> or <strong>Depart At</strong>.</li>
+            <li>Click <strong>Get Directions</strong> to view the suggested route.</li>
+            <li>Click any station marker to view live, historical, and predicted availability.</li>
+            <li>Use the <strong>Weather</strong> panel to check forecast conditions before travelling.</li>
+          </ol>
+        
         </div>
       </div>
     </div>
