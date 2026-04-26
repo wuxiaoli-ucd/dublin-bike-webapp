@@ -27,15 +27,20 @@ def fetch_station_history_hourly(station_id: int, live_mode: bool = False):
 
         result = conn.execute(
             text("""
-                SELECT
-                  DATE_FORMAT(last_update, '%Y-%m-%d %H:00:00') AS bucket,
-                  AVG(available_bikes) AS avg_bikes,
-                  AVG(available_bike_stands) AS avg_stands,
-                  COUNT(*) AS samples
-                FROM availability
-                WHERE number = :number
-                  AND last_update BETWEEN DATE_SUB(:ref_time, INTERVAL 8 HOUR) AND :ref_time
-                GROUP BY bucket
+                SELECT *
+                FROM (
+                    SELECT
+                      DATE_FORMAT(last_update, '%Y-%m-%d %H:00:00') AS bucket,
+                      AVG(available_bikes) AS avg_bikes,
+                      AVG(available_bike_stands) AS avg_stands,
+                      COUNT(*) AS samples
+                    FROM availability
+                    WHERE number = :number
+                      AND last_update <= :ref_time
+                    GROUP BY bucket
+                    ORDER BY bucket DESC
+                    LIMIT 8
+                ) AS last_8_hours
                 ORDER BY bucket
             """),
             {"number": station_id, "ref_time": ref_time}
@@ -61,15 +66,20 @@ def fetch_station_history_daily(station_id: int, live_mode: bool = False):
 
         result = conn.execute(
             text("""
-                SELECT
-                  DATE(last_update) AS bucket,
-                  AVG(available_bikes) AS avg_bikes,
-                  AVG(available_bike_stands) AS avg_stands,
-                  COUNT(*) AS samples
-                FROM availability
-                WHERE number = :number
-                  AND last_update BETWEEN DATE_SUB(:ref_time, INTERVAL 7 DAY) AND :ref_time
-                GROUP BY bucket
+                SELECT *
+                FROM (
+                    SELECT
+                      DATE(last_update) AS bucket,
+                      AVG(available_bikes) AS avg_bikes,
+                      AVG(available_bike_stands) AS avg_stands,
+                      COUNT(*) AS samples
+                    FROM availability
+                    WHERE number = :number
+                      AND last_update <= :ref_time
+                    GROUP BY bucket
+                    ORDER BY bucket DESC
+                    LIMIT 7
+                ) AS last_7_days
                 ORDER BY bucket
             """),
             {"number": station_id, "ref_time": ref_time}
