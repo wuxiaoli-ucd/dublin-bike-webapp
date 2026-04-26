@@ -4,4 +4,5 @@ __pycache__/
 .env
 venv/
 .DS_Store
-.vscode/
+.vscode/models/final_merged_data.csv
+models/bike_model.joblib
