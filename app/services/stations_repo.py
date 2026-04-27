@@ -3,6 +3,31 @@ from .db import engine
 
 
 def fetch_stations_with_latest_availability():
+    """
+    Returns all stations with their latest known availability.
+
+    Query:
+    - Retrieves all stations from the station table
+    - LEFT JOINs the most recent availability record per station
+    - "Latest" is defined as the row with the maximum scraped_at timestamp
+
+    Why LEFT JOIN:
+    - Ensures stations are still returned even if no availability data exists yet
+
+    Returns:
+        List of dicts in a frontend-friendly structure:
+        {
+            "number": ...,
+            "name": ...,
+            "position": { "lat": ..., "lng": ... },
+            "available_bikes": ...,
+            "available_bike_stands": ...,
+            "bike_stands": ...,
+            "status": ...,
+            "scraped_at": ...
+        }
+    """
+
     sql = text("""
     SELECT
       s.number,
@@ -31,10 +56,12 @@ def fetch_stations_with_latest_availability():
     with engine.connect() as conn:
         rows = conn.execute(sql).mappings().all()
 
+    # transform db rows into consistent JSON-friendly structure
     return [
         {
             "number": r["number"],
             "name": r["name"],
+            # group lat/lng into single object
             "position": {
                 "lat": float(r["position_lat"]),
                 "lng": float(r["position_lng"]),
@@ -43,7 +70,7 @@ def fetch_stations_with_latest_availability():
             "available_bike_stands": r["available_bike_stands"],
             "bike_stands": r["bike_stands"],
             "status": r["status"],
-            "scraped_at": r["scraped_at"],
+            "scraped_at": r["scraped_at"], 
         }
         for r in rows
     ]

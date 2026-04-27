@@ -4,6 +4,9 @@ let mapRef = null;
 let selectedStationId = null;
 
 function initStationMarkers(mapInstance) {
+  /*
+   * Stores shared map/tooltip references used by marker functions.
+   */
   mapRef = mapInstance;
   tooltipEl = document.getElementById("stationTooltip");
 }
@@ -53,6 +56,10 @@ function renderStations(mapInstance, stations, onStationClick) {
 }
 
 function createMarker(mapInstance, station, onStationClick) {
+  /*
+   * Creates a Google Maps marker for a station.
+   * The label shows current available bikes.
+   */
   const marker = new google.maps.Marker({
     map: mapInstance,
     position: {
@@ -89,6 +96,9 @@ function createMarker(mapInstance, station, onStationClick) {
 }
 
 function updateMarker(markerObj, station) {
+  /*
+   * Updates an existing marker with fresh station availability/location data.
+   */
   markerObj.station = station;
 
   markerObj.marker.setPosition({
@@ -109,6 +119,10 @@ function updateMarker(markerObj, station) {
 }
 
 function buildMarkerIcon(station, isSelected = false) {
+  /*
+   * Builds the circular marker icon.
+   * Selected markers are larger with a darker border for visibility.
+   */
   return {
     path: google.maps.SymbolPath.CIRCLE,
     fillColor: getMarkerColor(station),
@@ -120,6 +134,10 @@ function buildMarkerIcon(station, isSelected = false) {
 }
 
 function getMarkerColor(station) {
+  /*
+   * Colours markers based on current bike availability.
+   * Grey means empty; warmer colours mean low supply; green means healthy supply.
+   */
   const bikes = Number(station.available_bikes ?? 0);
 
   if (bikes === 0) return "#808080";
@@ -129,6 +147,9 @@ function getMarkerColor(station) {
 }
 
 function showStationTooltip(station, event) {
+  /*
+   * Displays the hover tooltip with station availability information.
+   */
   if (!tooltipEl) return;
 
   tooltipEl.innerHTML = buildTooltipContent(station);
@@ -143,6 +164,10 @@ function hideStationTooltip() {
 }
 
 function buildTooltipContent(station) {
+  /*
+   * Builds tooltip HTML. Station names are escaped to avoid injecting
+   * untrusted text into the page.
+   */
   const bikes = station.available_bikes ?? 0;
   const stands = station.available_bike_stands ?? 0;
   const capacity = station.bike_stands ?? 0;

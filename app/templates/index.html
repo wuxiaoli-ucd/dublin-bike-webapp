@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- if we want to view on mobile for some reason -->
+  <!-- Makes layout responsive on smaller screens -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  
   <title>Dublin Bikes</title>
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="../static/images/favicon.ico" type="image/x-icon">
 </head>
@@ -116,7 +119,6 @@
             <p id="weatherUpdated" class="update-time">Updating weather…</p>
           </section>
         </section>
-        </section>
       </div>
     </aside>
 
@@ -125,7 +127,7 @@
       <div id="map" aria-label="Map"></div>
     </main>
 
-    <!-- Right Panel (Station Drawer) - hidden until station selected -->
+    <!-- Right Panel (Station Panel) - hidden until station selected -->
     <aside id="rightPanel">
       <div id="stationHeader">
         <div id="stationHeaderLeft">
@@ -198,8 +200,10 @@
     </aside>
   </div>
 
+  <!-- custom station tooltip for when hovering over station markers -->
   <div id="stationTooltip" class="stationTooltip" hidden></div>
 
+  <!-- Chart.js should load before modules -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
   <script src="{{ url_for('static', filename='js/station_markers.js') }}"></script>

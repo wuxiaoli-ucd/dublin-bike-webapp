@@ -1,3 +1,10 @@
+/*
+ * Main Frontend Controller
+ *
+ * Coordinates the map, route planning, station panel, route drawing,
+ * menu interactions, and user journey metrics.
+ */
+
 let map;
 let startPlace = null;
 let destPlace = null;
@@ -10,7 +17,8 @@ const STATION_REFRESH_MS = 60000;
 
 const $ = (id) => document.getElementById(id); // shortcut
 
-// ---------- helpers ----------
+// ---------- Route/map helpers ----------
+
 function clearRoutes() {
   routeLines.forEach(l => l.setMap(null));
   routeLines = [];
@@ -28,6 +36,10 @@ function setError(msg = "") {
 }
 
 function durToSec(d) {
+  /*
+   * Google Routes durations arrive as strings like "540s".
+   * Convert them into seconds for display calculations.
+   */
   if (!d) return 0;
   const s = String(d).trim();
   if (!s.endsWith("s")) return 0;
@@ -38,8 +50,14 @@ function secToMin(s) {
   return Math.round(s / 60);
 }
 
+// ---------- Station refresh ----------
 
 async function refreshStations() {
+  /*
+   * Periodically reloads station availability.
+   * Markers update in place, and the open station panel is refreshed
+   * if the user is currently viewing a station.
+   */
   try {
     const stations = await getStations();
     addStations(stations);
@@ -50,6 +68,10 @@ async function refreshStations() {
 }
 
 function refreshOpenStationPanel(stations) {
+  /*
+   * Keeps the right-side station panel in sync with live marker refreshes.
+   * Without this, the selected station details could become stale.
+   */
   if (!document.body.classList.contains("station-open")) return;
   if (!currentStation) return;
 
@@ -87,7 +109,8 @@ function isFutureDeparture(dateStr, timeStr) {
 }
 
 
-// ---------- top right menu button ----------
+// ---------- Menu and user metrics ----------
+
 let totalKmCycled = Number(localStorage.getItem("totalKmCycled") || 0);
 const CO2_KG_PER_KM_CAR = 0.14;
 let totalTrips = Number(localStorage.getItem("totalTrips") || 0);
@@ -149,11 +172,16 @@ function resetStats() {
 }
 
 
-// ---------- left panel (route details) ----------
+// ---------- Left panel visibility ----------
+
 let showDirections = false;
 let showWeather = false;
 
 function updateLeftPanelVisibility() {
+  /*
+   * Shows/hides left panel blocks based on toggle state.
+   * If neither block is open, the full left panel is collapsed.
+   */
   const directionsBlock = $("directionsBlock");
   const weatherBlock = $("weatherBlock");
   const directionsBtn = $("toggleDirections");
@@ -199,7 +227,9 @@ function initPanelToggles() {
   updateLeftPanelVisibility();
 }
 
-// Depart at -------
+
+// ---------- Depart At controls ----------
+
 let departureMode = "leave_now";
 
 function formatDateValue(date) {
@@ -237,6 +267,10 @@ function populateDepartDays() {
 }
 
 function setDefaultDepartTime() {
+  /*
+   * Defaults departure time to the next 15-minute interval.
+   * This avoids filling an already-past time.
+   */
   const input = $("departTime");
   if (!input) return;
 
@@ -260,6 +294,9 @@ function setDefaultDepartTime() {
 }
 
 function setDepartureMode(mode) {
+  /*
+   * Switches between live availability routing and future prediction routing.
+   */
   const leaveNowBtn = $("leaveNow");
   const departAtBtn = $("departAt");
   const options = $("departAtOptions");
@@ -278,6 +315,9 @@ function setDepartureMode(mode) {
 }
 
 function getDepartureSelection() {
+  /*
+   * Returns the route timing mode in the shape expected by /api/route.
+   */
   if (departureMode === "leave_now") {
     return {
       mode: "leave_now",
@@ -315,7 +355,8 @@ function initDepartControls() {
   });
 }
 
-// -------------
+
+// ---------- Route details display ----------
 
 function getStepIcon(title) {
   const t = title.toLowerCase();
@@ -365,9 +406,13 @@ function showRouteDetails(lines, summaryText) {
   section.hidden = false;
 }
 
-// ---------- right panel (station details) ----------
+
+// ---------- Right station panel ----------
+
 function openStationPanel(station) {
-  //lily add
+  /*
+   * Opens the station drawer and loads current, historical, and predicted data.
+   */
   setCurrentStation(station);
 
   const nameEl = $("stationName");
@@ -400,8 +445,13 @@ function closeStationPanel() {
   if (window.clearSelectedStation) clearSelectedStation();
 }
 
-// ---------- stations ----------
+
+// ---------- Stations ----------
+
 async function getStations() {
+  /*
+   * Loads current station availability from the backend.
+   */
   const r = await fetch("/api/stations");
   if (!r.ok) throw new Error("Failed to load stations");
   const data = await r.json();
@@ -414,8 +464,14 @@ function addStations(stations) {
   });
 }
 
-// ---------- polyline drawing ----------
+
+// ---------- Polyline drawing ----------
+
 function decodePolyline(encoded) {
+  /*
+   * Decodes Google encoded polyline strings into lat/lng points.
+   * Google Routes API returns route geometry in this compressed format.
+   */
   let i = 0, lat = 0, lng = 0;
   const path = [];
 
@@ -436,6 +492,10 @@ function decodePolyline(encoded) {
 }
 
 function drawLine(encoded, kind) {
+  /*
+   * Draws a route segment on the map.
+   * Walking is shown as a dashed blue line; cycling as a solid red line.
+   */
   const path = decodePolyline(encoded);
 
   let line;
@@ -478,6 +538,9 @@ function drawLine(encoded, kind) {
 }
 
 function addRouteDot(position, kind = "start") {
+  /*
+   * Adds start/end dots for the displayed route.
+   */
   const marker = new google.maps.Marker({
     map,
     position,
@@ -496,33 +559,46 @@ function addRouteDot(position, kind = "start") {
   return marker;
 }
 
-// ---------- routing ----------
-  async function fetchRoute(start, destination, departureSelection) {
-  const payload = {
-    start,
-    destination,
-    departureMode: departureSelection.mode
-  };
 
-  if (departureSelection.mode === "depart_at") {
-    payload.date = departureSelection.date;
-    payload.time = departureSelection.time.length === 5
-      ? `${departureSelection.time}:00`
-      : departureSelection.time;
+// ---------- Routing ----------
+
+  async function fetchRoute(start, destination, departureSelection) {
+    /*
+    * Sends a route-planning request to the backend.
+    *
+    * Leave Now uses current station availability.
+    * Depart At sends date/time so the backend can use predicted availability.
+    */
+  
+    const payload = {
+      start,
+      destination,
+      departureMode: departureSelection.mode
+    };
+
+    if (departureSelection.mode === "depart_at") {
+      payload.date = departureSelection.date;
+      payload.time = departureSelection.time.length === 5
+        ? `${departureSelection.time}:00`
+        : departureSelection.time;
+    }
+
+    const r = await fetch("/api/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json().catch(() => null);
+    if (!r.ok || !data) throw new Error(data?.error || `Route request failed (${r.status})`);
+    return data;
   }
 
-  const r = await fetch("/api/route", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await r.json().catch(() => null);
-  if (!r.ok || !data) throw new Error(data?.error || `Route request failed (${r.status})`);
-  return data;
-}
-
 async function onGo() {
+  /*
+   * Main route-planning handler.
+   * Validates inputs, asks backend for a route, draws the result, and updates metrics.
+   */
   setError("");
   clearRoutes();
   closeStationPanel();
@@ -589,9 +665,6 @@ async function onGo() {
       const s2 = durToSec(data.legs.cycleBetweenStations.duration);
       const s3 = durToSec(data.legs.walkToDestination.duration);
 
-      console.log("route response", data);
-      console.log("bike meters", data.legs?.cycleBetweenStations?.distanceMeters);
-
       showRouteDetails(
         [
           ["Walk to station", `${secToMin(s1)} min`],
@@ -635,8 +708,12 @@ async function onGo() {
   }
 }
 
-// ---------- init ----------
+// ---------- Initialisation ----------
+
 function initAutocomplete() {
+  /*
+   * Initialises Google Places autocomplete for start and destination inputs.
+   */
   const startEl = $("start");
   const destEl = $("dest");
   const goBtn = $("go");
@@ -696,6 +773,9 @@ function initAutocomplete() {
 }
 
 function initMap() {
+  /*
+   * This is called after the Google Maps script loads.
+   */
   map = new google.maps.Map($("map"), {
     center: { lat: 53.35, lng: -6.266 },
     zoom: 14,
@@ -749,4 +829,5 @@ function initMap() {
 
 window.initMap = initMap;
 
+// resets user metrics
 window.resetStats = resetStats;

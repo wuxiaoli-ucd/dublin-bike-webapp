@@ -2,9 +2,10 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# key in env file
 OWKEY = os.getenv("OWKEY", "REPLACE")
 
-# Dublin
+# coords in Dublin used in weather requests
 LAT = 53.3484
 LON = -6.2539
 

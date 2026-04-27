@@ -2,6 +2,12 @@ import datetime
 import json, glob
 
 def inspect_file(path):
+    """
+    Loads a saved weather JSON file and prints a quick summary.
+
+    Extracts a sample of fields from the first hourly record
+    to verify expected structure and keys.
+    """
     with open(path) as f:
         payload = json.load(f)
 

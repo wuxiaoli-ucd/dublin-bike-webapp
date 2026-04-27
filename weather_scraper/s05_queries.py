@@ -9,7 +9,7 @@ engine = create_engine(
 )
 
 with engine.connect() as conn:
+    # Total number of rows stored
     print(conn.execute(text("SELECT COUNT(*) FROM weather_hourly;")).fetchall())
+    # Show most recent records (ordered by timestamp descending)
     print(conn.execute(text("SELECT * FROM weather_hourly ORDER BY dt DESC LIMIT 5;")).fetchall())
-
-

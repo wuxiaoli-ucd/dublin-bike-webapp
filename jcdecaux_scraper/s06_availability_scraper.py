@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime, UTC
 import json
 from sqlalchemy import text
-import scraper.dbinfo as dbinfo
+import jcdecaux_scraper.dbinfo as dbinfo
 from app.services.db import engine
 
 def availability_to_db(raw_text, in_engine):
