@@ -100,7 +100,7 @@ Scripts for collecting and processing Dublin Bikes data from the JCDecaux API.
 - `s05_load_stations.py` – loads station metadata into the database  
 - `s06_availability_scraper.py` – collects real-time bike availability data for periodic scraping  
 
-- `bike_data_0214.sql` – SQL dump for database initialization  
+- `bike_data_0214.sql` – SQL dump for database setup  
 - `stations_snapshot.json` – sample snapshot of station data  
 
 - `dbinfo.py` – database configuration helper  
@@ -180,7 +180,7 @@ conda env create -f environment.yml
 conda activate <your-env-name>
 ```
 
-### Project Management
+## Project Management
 - Product Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=1973710968)
 - Sprint Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=0)
 
