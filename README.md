@@ -183,7 +183,7 @@ conda activate <your-env-name>
 ## Project Management
 - Product Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=1973710968)
 - Sprint Backlog → [View on Google Docs](https://docs.google.com/spreadsheets/d/1DY_0ggsqlPJSaJ-rkWWOccIhjW6koIHUWy71u4fS_ps/edit?gid=0)
-- Report → [View on Google Docs]https://docs.google.com/document/d/1onx3V0C9gPn-Cyhx1asdoLPOHtVmtyF5zU2nTiUUNnU/edit?tab=t.0
+- Report → [View on Google Docs](https://docs.google.com/document/d/1onx3V0C9gPn-Cyhx1asdoLPOHtVmtyF5zU2nTiUUNnU/edit?tab=t.0)
 ## Team Members
 - Xiaoli Wu
 - Andrew Mitchell
