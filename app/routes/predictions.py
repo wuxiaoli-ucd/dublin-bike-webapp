@@ -6,7 +6,24 @@ predictions_bp = Blueprint("predictions", __name__)
 
 @predictions_bp.route("/predict", methods=["GET"])
 def predict():
+    """
+    Returns a single prediction for a given station and datetime.
+
+    Expected parameters:
+    - station_id: int
+    - date: string (YYYY-MM-DD)
+    - time: string (HH:MM)
+
+    Response:
+    {
+        "available_bikes": ...,
+        "available_bike_stands": ...
+    }
+
+    This endpoint is used by the "Depart At" feature in the frontend.
+    """
     try:
+        # extract query parameters from the request URL
         date = request.args.get("date") # request object from Flask
         time = request.args.get("time")
         station_id = request.args.get("station_id")
@@ -25,6 +42,7 @@ def predict():
         return jsonify(result)
 
     except ValueError as e:
+        # raised when datetime is in the past, or exceeds allowed prediction window
         return jsonify({"error": "Predictions are only available up to 3 days from now"}), 400
 
     except Exception as e:
@@ -34,7 +52,23 @@ def predict():
 # for predicted availability chart
 @predictions_bp.route("/predictions/<int:station_id>/hourly", methods=["GET"])
 def predicted_hourly(station_id):
+    """
+    Returns an hourly prediction series for a station.
+
+    Used by the frontend prediction chart (Hours mode).
+
+    - Generates predictions for the next 8 hours
+    - Uses current time as the base reference point
+    - Each point represents predicted availability at that hour
+
+    Response format (example):
+    [
+        {"time": "...", "available_bikes": ..., "available_bike_stands": ...},
+        ...
+    ]
+    """
     try:
+        
         data = predict_hourly_series(station_id, hours=8)
         return jsonify(data)
 
@@ -48,6 +82,21 @@ def predicted_hourly(station_id):
 
 @predictions_bp.route("/predictions/<int:station_id>/daily", methods=["GET"])
 def predicted_daily(station_id):
+    """
+    Returns a daily prediction series for a station.
+
+    Used by the frontend prediction chart (Days mode).
+
+    - Generates predictions for the next 3 days
+    - Each point typically represents a representative time per day
+      (e.g. midday or peak usage depending on implementation)
+
+    Response format (example):
+    [
+        {"time": "...", "available_bikes": ..., "available_bike_stands": ...},
+        ...
+    ]
+    """
     try:
         data = predict_daily_series(station_id, days=3)
         return jsonify(data)

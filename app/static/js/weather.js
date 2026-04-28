@@ -29,10 +29,11 @@ function getSelectedDepartTimestamp() {
 }
 
 
-/**
- * Updates the current-weather summary in the top bar.
- */
+
 async function updateWeatherStatus() {
+  /**
+   * Updates the current-weather summary in the top bar.
+   */
   try {
     const response = await fetch("/api/weather/current");
     if (!response.ok) {
@@ -43,7 +44,6 @@ async function updateWeatherStatus() {
 
     const weatherEl = document.getElementById("weatherText");
     const tempEl = document.getElementById("tempText");
-    const iconEl = document.getElementById("weatherStatusIcon");
 
     // Update weather text
     if (weatherEl) {
@@ -65,34 +65,27 @@ async function updateWeatherStatus() {
       }
     }
 
-    // Show small weather icon in header
-    if (iconEl && data.icon) {
-      iconEl.src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
-      iconEl.alt = data.weather || "weather icon";
-      iconEl.style.display = "inline-block";
-    }
   } catch (err) {
     console.error("Status Bar Error:", err);
 
     const weatherEl = document.getElementById("weatherText");
     const tempEl = document.getElementById("tempText");
-    const iconEl = document.getElementById("weatherStatusIcon");
 
     if (weatherEl) weatherEl.textContent = "Weather: unavailable";
     if (tempEl) tempEl.textContent = "Temp: N/A";
-    if (iconEl) iconEl.style.display = "none";
   }
 }
 
 
-/**
- * Fetches forecast data from the backend.
- *
- * If Hourly mode is active and Depart At is selected,
- * sends base_time so the backend can return hourly forecast
- * starting from the selected departure time.
- */
+
 async function fetchForecastData() {
+  /**
+   * Fetches forecast data from the backend.
+   *
+   * If Hourly mode is active and Depart At is selected,
+   * sends base_time so the backend can return hourly forecast
+   * starting from the selected departure time.
+   */
   const departTimestamp = getSelectedDepartTimestamp();
 
   let url = "/api/weather/forecast";
@@ -111,13 +104,14 @@ async function fetchForecastData() {
 }
 
 
-/**
- * Renders the hourly forecast grid.
- *
- * If chosenToDepartAt is true, labels show clock times from the
- * selected departure time onward rather than "Now".
- */
+
 function renderHourlyWeather(hourlyData, chosenToDepartAt = false) {
+  /**
+   * Renders the hourly forecast grid.
+   *
+   * If chosenToDepartAt is true, labels show clock times from the
+   * selected departure time onward rather than "Now".
+   */
   const container = document.getElementById("weatherForecast");
   const updatedEl = document.getElementById("weatherUpdated");
 
@@ -172,11 +166,12 @@ function renderHourlyWeather(hourlyData, chosenToDepartAt = false) {
 }
 
 
-/**
- * Renders the daily forecast grid.
- * Shows Today + next 3 days.
- */
+
 function renderDailyWeather(dailyData) {
+  /**
+   * Renders the daily forecast grid.
+   * Shows Today + next 3 days.
+   */
   const container = document.getElementById("weatherForecast");
   const updatedEl = document.getElementById("weatherUpdated");
 
@@ -227,11 +222,12 @@ function renderDailyWeather(dailyData) {
 }
 
 
-/**
- * Main forecast loader.
- * Decides whether to render hourly or daily view.
- */
+
 async function loadWeather() {
+  /**
+   * Main forecast loader.
+   * Decides whether to render hourly or daily view.
+   */
   try {
     const data = await fetchForecastData();
     const departTimestamp = getSelectedDepartTimestamp();
@@ -259,10 +255,11 @@ async function loadWeather() {
 }
 
 
-/**
- * Initialises the Hourly / Daily toggle buttons.
- */
+
 function initWeatherToggle() {
+  /**
+   * Initialises the Hourly / Daily toggle buttons.
+   */
   const hourlyBtn = document.getElementById("weatherHourlyBtn");
   const dailyBtn = document.getElementById("weatherDailyBtn");
 
@@ -284,13 +281,11 @@ function initWeatherToggle() {
 }
 
 
-/**
- * Refreshes the weather forecast whenever the journey timing controls change.
- *
- * This ensures the hourly forecast follows the selected Depart At time
- * rather than always showing the next few hours from now.
- */
 function initDepartWeatherRefresh() {
+   /*
+    * Refreshes the hourly forecast when journey timing controls change.
+    * This keeps the forecast aligned with the selected Depart At time.
+    */
   const departAtBtn = document.getElementById("departAt");
   const leaveNowBtn = document.getElementById("leaveNow");
   const departDaySelect = document.getElementById("departDay");
@@ -314,10 +309,11 @@ function initDepartWeatherRefresh() {
 }
 
 
-/**
- * Initialise weather features once the page is ready.
- */
+
 document.addEventListener("DOMContentLoaded", () => {
+  /**
+   * Initialise weather features once the page is ready.
+   */
   updateWeatherStatus();
   initWeatherToggle();
   initDepartWeatherRefresh();

@@ -5,6 +5,9 @@ from sqlalchemy import create_engine, text
 import dbinfo
 
 def make_engine():
+    """
+    Creates an SQLAlchemy engine for the OpenWeather MySQL database.
+    """
     return create_engine(
         f"mysql+pymysql://{dbinfo.MYSQL_USER}:{dbinfo.MYSQL_PASSWORD}"
         f"@{dbinfo.MYSQL_HOST}:{dbinfo.MYSQL_PORT}/{dbinfo.MYSQL_DB}",
@@ -13,6 +16,12 @@ def make_engine():
     )
 
 def row_from_payload(payload: dict):
+    """
+    Converts the first hourly forecast item into a database row.
+
+    Only the first hourly item is inserted because this script stores a snapshot
+    of the nearest available hourly weather at scrape time.
+    """
     h = (payload.get("hourly") or [None])[0]
     if not h:
         return None
@@ -33,6 +42,14 @@ def row_from_payload(payload: dict):
     }
 
 def upsert_weather(engine, row: dict):
+    """
+    Inserts or updates one weather_hourly row.
+
+    dt is the primary key, so ON DUPLICATE KEY UPDATE prevents duplicate
+    rows when the script is run more than once for the same forecast hour.
+    """
+    
+
     sql = text("""
       INSERT INTO weather_hourly
       (dt, temp, feels_like, pressure, humidity, wind_speed, wind_gust, weather_id, rain_1h, snow_1h)

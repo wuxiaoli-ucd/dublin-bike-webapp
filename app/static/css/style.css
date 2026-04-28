@@ -187,7 +187,7 @@ body.station-open #howToPopup {
   grid-template-columns: var(--left) 1fr; 
 }
 
-/* state modifiers */
+/* Layout changes when the left panel is hidden or the station drawer is open */
 body.left-hidden #app{
   grid-template-columns: 1fr;
 }
@@ -292,21 +292,9 @@ body.left-hidden #leftPanel{
 h1, h2, h3{ margin: 0 0 10px 0; }
 h1, h2, h3{ color: var(--primary-dark); }
 
-.section-title{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+
 
 /* --- location boxes elements --- */
-.field{ margin-bottom: 10px; }
-
-label{
-  display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-  color: var(--text);
-}
 
 input{
   width: 100%;
@@ -525,15 +513,6 @@ button{
   height: 100%;
   display: block;
 }
-
-.callout{
-  border: 1px solid var(--secondary);
-  background: var(--panel);
-  padding: 10px;
-  margin-top: 10px;
-}
-
-
 
 
 /* tooltips */

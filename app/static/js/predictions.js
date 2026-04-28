@@ -1,5 +1,20 @@
+/*
+ * Predictions
+ *
+ * Handles prediction requests and the predicted availability chart.
+ *
+ * Used for:
+ * - Single station prediction requests for a selected Depart At time
+ * - Predicted availability chart in the station panel
+ * - Depart At day options in the directions form
+ */
+
 async function fetchPrediction(stationId, date, time) {
-    try {
+  /*
+   * Fetches a single predicted availability result for a station.
+   * Used when the user selects a specific Depart At date/time.
+   */  
+  try {
         const formattedTime = time.length === 5 ? `${time}:00` : time;
 
         const response = await fetch(
@@ -19,6 +34,10 @@ async function fetchPrediction(stationId, date, time) {
 }
 
 function populateDepartDayOptions() {
+  /*
+   * Populates the Depart At day dropdown with today + next 3 days.
+   * This matches the backend prediction window.
+   */
   const departDay = document.getElementById("departDay");
   if (!departDay) return;
 
@@ -52,6 +71,10 @@ let predictedMode = "days";
 
 // fetch predicted data from flask
 async function fetchPredictedData(stationId, mode) {
+  /*
+   * Fetches prediction data for the selected station.
+   * Days mode and Hours mode use separate backend endpoints.
+   */
   const endpoint =
     mode === "hours"
       ? `/api/predictions/${stationId}/hourly`
@@ -65,8 +88,12 @@ async function fetchPredictedData(stationId, mode) {
   return await r.json();
 }
 
-// render predicted chart
+
 function renderPredictedChart(data, mode) {
+  /*
+   * Renders the predicted availability chart.
+   * Existing Chart.js instances must be destroyed before rendering again.
+   */
   const canvas = document.getElementById("predictedCanvas");
   if (!canvas) return;
 
@@ -103,6 +130,10 @@ function renderPredictedChart(data, mode) {
 }
 
 function formatPredictedLabel(bucket, mode) {
+  /*
+   * Formats prediction buckets for chart labels.
+   * Daily predictions show dates; hourly predictions show times.
+   */
   const date = new Date(bucket);
 
   if (mode === "days") {
@@ -122,6 +153,10 @@ function formatPredictedLabel(bucket, mode) {
 
 
 async function loadPredictedChart(station, mode = "days") {
+  /*
+   * Loads and renders prediction chart data for the selected station.
+   * Called when opening a station panel and when switching chart mode.
+   */
   if (!station) return;
 
   try {
@@ -133,8 +168,12 @@ async function loadPredictedChart(station, mode = "days") {
   }
 }
 
-// init toggle
+
 function initPredictedToggle() {
+  /*
+   * Sets up the Days / Hours toggle for predicted availability.
+   * Uses the current station from historical_availability.js shared state.
+   */
   const buttons = document.querySelectorAll('[data-chart="predicted"]');
   const subtitle = document.getElementById("predictedSubtitle");
 
@@ -164,6 +203,7 @@ function getPredictedMode() {
   return predictedMode;
 }
 
+// Expose functions used by index.js and the station panel logic.
 window.initPredictedToggle = initPredictedToggle;
 window.loadPredictedChart = loadPredictedChart;
 window.getPredictedMode = getPredictedMode;

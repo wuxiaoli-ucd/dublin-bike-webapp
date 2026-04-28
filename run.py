@@ -6,12 +6,19 @@ from app.services.db import get_db_settings
 app = create_app()
 
 if __name__ == "__main__":
+    """
+    Runs the Flask development server.
+
+    Behaviour varies depending on DEPLOY_ENV:
+    - local: runs on localhost with debug enabled
+    - production (e.g. EC2): binds to all interfaces with debug disabled
+    """
     deploy_env = os.getenv("DEPLOY_ENV", "local").lower()
 
-    host = "127.0.0.1" if deploy_env == "local" else "0.0.0.0" # is 0.0.0.0 okay for final product?
+    host = "127.0.0.1" if deploy_env == "local" else "0.0.0.0"
     port = int(os.getenv("PORT", "5001"))
 
-    # when deployed in ec2, the debug turned to false for information securuty
+    # when deployed in ec2, the debug is turned to false for information security
     debug = deploy_env == "local"
     db_settings = get_db_settings()
 

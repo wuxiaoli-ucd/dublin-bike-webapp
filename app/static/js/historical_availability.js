@@ -1,9 +1,25 @@
+/*
+ * Historical Availability
+ *
+ * Handles the historical availability chart shown in the station panel.
+ * The chart can display either:
+ * - past 7 days
+ * - past 8 hours
+ *
+ * Data is fetched from the backend availability endpoints and rendered
+ * using Chart.js.
+ */
+
 let currentStation = null;
 let historicalChart = null;
 let historicalMode = "days";
 
-// lily add: fetch historical data from flask
+
 async function fetchHistoricalData(stationId, mode) {
+  /*
+   * Fetches historical availability for the selected station.
+   * The endpoint depends on whether the chart is in Hours or Days mode.
+   */
   const endpoint =
   mode === "hours"
     ? `/api/availability/${stationId}/hourly`
@@ -17,13 +33,18 @@ async function fetchHistoricalData(stationId, mode) {
   return await r.json();
 }
 
-// lily add: render chart
+
 function renderHistoricalChart(data, mode) {
+  /*
+   * Renders the historical availability chart.
+   * Existing Chart.js instances are destroyed before re-rendering to avoid
+   * overlapping charts and memory leaks.
+   */
   const canvas = document.getElementById("historicalCanvas");
   if (!canvas) return;
 
   const labels = data.series.map(d => formatLabel(d.bucket, mode));
-  const bikes = data.series.map(item => Math.round(Number(item.avg_bikes ?? 0)));
+  const bikes = data.series.map(item => Math.round(Number(item.avg_bikes ?? 0))); // round to display whole number
   const stands = data.series.map(item => Math.round(Number(item.avg_stands ?? 0)));
 
   if (historicalChart) {
@@ -55,7 +76,11 @@ function renderHistoricalChart(data, mode) {
 }
 
 function formatLabel(bucket, mode) {
-    if (mode === "days") {
+  /*
+   * Formats backend time buckets into readable chart labels.
+   * Daily buckets are displayed as dates; hourly buckets are displayed as times.
+   */  
+  if (mode === "days") {
         const date = new Date(bucket);
         return date.toLocaleDateString("en-IE", {
             weekday: "short",
@@ -72,13 +97,15 @@ function formatLabel(bucket, mode) {
     }
 }
 
-// lily add: load chart
+
 async function loadHistoricalChart(station, mode = "days") {
+  /*
+   * Loads and renders the chart for the selected station.
+   * Called when a station is opened and when the chart mode changes.
+   */
   if (!station) return;
 
   try {
-    console.log("clicked station:", station);
-
     const stationId = station.number;
     const data = await fetchHistoricalData(stationId, mode);
     renderHistoricalChart(data, mode);
@@ -87,8 +114,12 @@ async function loadHistoricalChart(station, mode = "days") {
   }
 }
 
-//lily add:init Toggle
+
 function initHistoricalToggle() {
+  /*
+   * Sets up the Days / Hours toggle for the historical chart.
+   * If a station is already selected, switching mode reloads the chart data.
+   */
   const buttons = document.querySelectorAll('[data-chart="historical"]');
   const subtitle = document.getElementById("historySubtitle");
 
@@ -114,6 +145,10 @@ function initHistoricalToggle() {
 }
 
 function setCurrentStation(station) {
+  /*
+   * Stores the currently selected station so the chart can refresh
+   * when toggling between Days and Hours.
+   */
   currentStation = station;
 }
 
@@ -125,6 +160,7 @@ function getCurrentStation() {
   return currentStation;
 }
 
+// Expose functions needed by index.js / station panel logic.
 window.getCurrentStation = getCurrentStation;
 window.initHistoricalToggle = initHistoricalToggle;
 window.loadHistoricalChart = loadHistoricalChart;

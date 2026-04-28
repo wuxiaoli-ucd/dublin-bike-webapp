@@ -6,22 +6,41 @@ import pandas as pd
 from app.services.stations_repo import fetch_stations_with_latest_availability
 from app.services.weather_service import get_prediction_weather
 
-# get project root (avoids issues with relative paths depending on how the app is started e.g., python app/run.py instead of running inside app)
+# get project root (avoids issues with relative paths depending on how the app is started e.g., python app/run.py instead of running inside app directory)
 BASE_DIR = Path(__file__).resolve().parents[2] 
 MODELS_DIR = BASE_DIR / "models"
 
 MODEL_PATH = MODELS_DIR / "bike_model.joblib"
 FEATURES_PATH = MODELS_DIR / "model_features.joblib"
 
+# load model at import time once so predictions don't reload files per request
 model = joblib.load(MODEL_PATH)
 model_features = joblib.load(FEATURES_PATH)
 
 
 def get_weather_for_datetime(target_dt: datetime) -> dict:
+    """
+    Returns weather features for the requested prediction time.
+
+    The weather service decides whether to use current, hourly, or daily
+    forecast data depending on the target datetime.
+    """
     return get_prediction_weather(target_dt)
 
 
 def get_station_metadata(station_id: int) -> dict:
+    """
+    Finds station metadata needed by the prediction model.
+
+    The model uses station-specific features such as:
+    - station ID
+    - capacity
+    - latitude/longitude
+
+    Latest availability is fetched through the stations repository because
+    it already returns stations in the shape used across the application
+    """
+
     stations = fetch_stations_with_latest_availability()
 
     for station in stations:
@@ -63,11 +82,19 @@ def build_prediction_input(station_id: int, depart_at: datetime) -> pd.DataFrame
 
 
 def predict_availability(station_id: int, depart_at: datetime) -> dict:
+    """
+    Predicts available bikes and docks for a station at a future datetime.
+
+    Validation is performed before prediction so the model is only used
+    for supported future dates.
+    """
+    
     validate_prediction_datetime(depart_at) # can only be three days from current date
     
     input_df = build_prediction_input(station_id, depart_at)
     prediction = model.predict(input_df)[0] # predict based on model 
 
+    # so the api never returns negative availability
     predicted_bikes = max(0, round(float(prediction[0])))
     predicted_docks = max(0, round(float(prediction[1])))
 
@@ -81,7 +108,10 @@ def predict_availability(station_id: int, depart_at: datetime) -> dict:
 
 def predict_from_strings(station_id: int, date_str: str, time_str: str) -> dict:
     """
-    Inputs arrive as strings
+    Parses frontend date/time strings and returns a single prediction.
+
+    The frontend sends date and time separately, so they are combined here
+    before being converted into a datetime object.
     """
     
     dt_formats = [
@@ -90,9 +120,10 @@ def predict_from_strings(station_id: int, date_str: str, time_str: str) -> dict:
     ]
 
     depart_at = None
-    for format in dt_formats:
+
+    for dt_format in dt_formats:
         try:
-            depart_at = datetime.strptime(f"{date_str} {time_str}", format)
+            depart_at = datetime.strptime(f"{date_str} {time_str}", dt_format)
             break
         except ValueError:
             continue
@@ -107,7 +138,15 @@ def predict_from_strings(station_id: int, date_str: str, time_str: str) -> dict:
 MAX_PREDICTION_DAYS = 3
 
 def validate_prediction_datetime(depart_at: datetime) -> None:
-    """Date-based rather than hour-based"""
+    """
+    Ensures prediction requests are within the supported time window.
+
+    Prediction time must be in the future
+    Prediction date must be no more than MAX_PREDICTION_DAYS ahead
+
+    The limit is date-based rather than exact-hour-based, which keeps the
+    behaviour easier to understand for users selecting dates in the UI.
+    """
     
     now = datetime.now()
 
@@ -120,8 +159,14 @@ def validate_prediction_datetime(depart_at: datetime) -> None:
         raise ValueError(f"Predictions are only available up to {MAX_PREDICTION_DAYS} days ahead")
     
 
-# for predicted availability chart
+
 def predict_hourly_series(station_id: int, hours: int = 8) -> list[dict]:
+    """
+    Generates hourly predictions for the frontend prediction chart.
+
+    Used by the chart's "Hours" mode. Each bucket represents one future
+    hourly interval from the current time.
+    """
     now = datetime.now()
     series = []
 
@@ -143,6 +188,12 @@ def predict_hourly_series(station_id: int, hours: int = 8) -> list[dict]:
 
 
 def predict_daily_series(station_id: int, days: int = 3) -> dict:
+    """
+    Generates daily predictions for the frontend prediction chart.
+
+    Used by the chart's "Days" mode. Each day is sampled at midday to give
+    a consistent representative prediction point.
+    """
     now = datetime.now()
     series = []
 

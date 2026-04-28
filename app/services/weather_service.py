@@ -11,6 +11,7 @@ UNITS = "metric"
 
 ONECALL_URL = "https://api.openweathermap.org/data/3.0/onecall"
 
+# lightweight in-memory cache for weather endpoints
 _weather_cache = {
     "data": None,
     "timestamp": 0
@@ -20,8 +21,16 @@ CACHE_SECONDS = 600  # 10 minutes
 
 
 def _fetch_weather():
+    """
+    Fetches weather data from OpenWeather, using a short in-memory cache.
+
+    If cached data is still fresh, it is returned instead of making another
+    external API request. This improves response time and reduces API usage.
+    """
+
     now = time.time()
 
+    # reuse cached api response if still within cache window
     if _weather_cache["data"] and (now - _weather_cache["timestamp"] < CACHE_SECONDS):
         return _weather_cache["data"]
 
@@ -30,7 +39,7 @@ def _fetch_weather():
         "lon": DUBLIN_LON,
         "appid": WEATHER_API_KEY,
         "units": UNITS,
-        # keep daily, only exclude what you do not need
+        # keep hourly and daily, exclude, minutely/alerts as app doesn't use
         "exclude": "minutely,alerts"
     }
 
@@ -39,6 +48,7 @@ def _fetch_weather():
 
     data = response.json()
 
+    
     _weather_cache["data"] = data
     _weather_cache["timestamp"] = now
 
@@ -46,13 +56,19 @@ def _fetch_weather():
 
 
 def get_current_weather():
+    """
+    Returns a current weather summary for the top-right of UI.
+
+    The frontend uses this to display:
+    - weather condition
+    - current temperature
+    """
     data = _fetch_weather()
     current = data["current"]
 
     return {
         "weather": current["weather"][0]["main"],
         "temp": current["temp"],
-        "icon": current["weather"][0]["icon"]
     }
 
 
