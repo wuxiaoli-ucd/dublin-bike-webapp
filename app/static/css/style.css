@@ -1,0 +1,664 @@
+:root{
+  /* ---- theme ---- */
+  --primary: #0047AB;
+  --primary-dark: #0b0b70;
+  --secondary: #82C8E5;
+  --neutral: #6D8196;
+
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --text: #111111;
+
+  --border-color: #000000;
+
+  /* layout */
+  --left: 360px;
+  --right: 360px;
+  --top: 56px;
+  --gap: 12px;
+
+  /* borders */
+  --border: 1px solid var(--border-color);
+}
+
+*{ box-sizing: border-box; } /* width includes padding and border */
+
+html, body{
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* --- top header --- */
+#topbar{
+  height: var(--top);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gap);
+  background: var(--primary);
+  border-bottom: var(--border);
+  color: #fff;
+}
+
+#topbar-left{
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#brand{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#brand-icon {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+#brand-name{
+  font-weight: 700;
+  color: #fff;
+}
+
+#topbar-right {
+  display: flex;
+  align-items: center; 
+  gap: 15px;             
+}
+
+#weatherSummary{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+#btnMenu {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--bg);
+  font-size: 22px;
+}
+
+#weatherSummary .label {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+#weatherSummary .value {
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+#weatherText,
+#tempText {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+#menuDropdown {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  width: 200px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  padding: 10px;
+  z-index: 2000;
+}
+
+body.station-open #menuDropdown {
+  right: calc(var(--right) + 5px); 
+}
+
+#menuDropdown .menuItem {
+  color: #111;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#howTo {
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#howTo:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+
+#howToPopup {
+  position: absolute;
+  top: 60px;
+  right: 215px;
+  width: 340px;
+  max-width: 40vw;
+  padding: 16px 18px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  z-index: 3000;
+}
+
+body.station-open #howToPopup {
+  right: calc(var(--right) + 210px);
+}
+
+.howToTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #1e3a8a;
+}
+
+.howToList {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+.howToList li + li {
+  margin-top: 6px;
+}
+
+/* --- main layout --- */
+#app{
+  position: relative;
+  height: calc(100vh - var(--top));
+  display: grid;
+  grid-template-columns: var(--left) 1fr; 
+}
+
+/* Layout changes when the left panel is hidden or the station drawer is open */
+body.left-hidden #app{
+  grid-template-columns: 1fr;
+}
+
+body.station-open #app{
+  grid-template-columns: var(--left) 1fr var(--right);
+}
+
+body.left-hidden.station-open #app{
+  grid-template-columns: 1fr var(--right);
+}
+
+/* panels */
+#leftPanel, #rightPanel{
+  padding: var(--gap);
+  overflow: auto;
+  background: #f5f9fe;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+#leftPanel{
+  padding: 75px 12px 12px 12px;
+  overflow: auto;
+  border-right: 2px solid var(--primary);
+}
+
+
+.inputWrap {
+  position: relative;
+}
+
+.inputWrap input {
+  width: 100%;
+  padding-right: 36px; /* space for the X */
+}
+
+.clearInput {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+
+  display: none; /* hidden by default */
+}
+
+.clearInput:hover {
+  color: #000;
+}
+
+#rightPanel{
+  border-left: 2px solid var(--primary);
+  display: none;       /* removes it from layout completely */
+}
+
+body.station-open #rightPanel{
+  display: block;      /* now it exists and takes the right column */
+}
+
+body.left-hidden #leftPanel{
+  display: none;
+}
+
+/* toggle buttons */
+#panelToggleBar{
+  position: absolute;
+  top: calc(var(--top) + 8px);
+  left: 60px;
+  z-index: 4000;
+  display: flex;
+  gap: 12px;
+}
+
+
+/* buttons */
+.toggle-btn{
+  padding: 16px 24px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.toggle-btn.active{
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+
+/* map area */
+#mapWrap{ background: var(--bg); }
+#map{ height: 100%; width: 100%; }
+
+/* --- basic typography --- */
+h1, h2, h3{ margin: 0 0 10px 0; }
+h1, h2, h3{ color: var(--primary-dark); }
+
+
+
+/* --- location boxes elements --- */
+
+input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--neutral);
+  font-size: 14px;
+  background: var(--panel);
+  color: var(--text);
+}
+
+/* main action button */
+#go{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--primary-dark);
+  font-size: 14px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* generic buttons (menu, close, etc) */
+button{
+  cursor: pointer;
+}
+
+/* segmented controls (depart at buttons etc.) */
+#departControls, .toggleRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.seg{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.seg.active{
+  background: var(--primary-dark);
+  color: #fff;
+  border-color: var(--primary-dark);
+}
+
+.departAtOptions{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0 10px 0;
+}
+
+.departAtOptions.hidden{
+  display: none;
+}
+
+.departAtOptions select,
+.departAtOptions input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+/* errors */
+#error{
+  min-height: 1.2em;
+  margin: 8px 0 0 0;
+  color: #b00000;
+}
+
+.item{
+  padding: 12px 0;
+  border-top: 1px solid var(--secondary);
+}
+
+.item:first-child{
+  border-top: none;
+}
+
+.route-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.route-icon{
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.route-text{
+  display: flex;
+  flex-direction: column;
+}
+
+.route-title{
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.small{
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+/* --- right panel blocks --- */
+#stationHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--secondary);
+}
+
+#closeStationPanel{
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+}
+
+.sections{
+  font-size: 13px;
+  color: var(--neutral);
+}
+
+/* stats */
+.statGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.statCard{
+  border: 1px solid var(--neutral);
+  padding: 10px;
+  background: var(--panel);
+}
+
+.statLabel{ 
+  font-size: 13px; 
+  color: var(--neutral); 
+}
+
+.statValue{ 
+  font-size: 22px; 
+  font-weight: 700; 
+  margin: 6px 0; 
+  color: var(--primary-dark); 
+}
+
+.statHint{ 
+  font-size: 12px; 
+  color: var(--neutral); 
+}
+
+/* capacity bar */
+.barRow{
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 3fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.bar{
+  height: 10px;
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+}
+
+.barFill{
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+}
+
+/* chart placeholders */
+#stationPredicted{
+  padding-top: 15px;
+}
+
+#predictedCanvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chartBox{
+  border: 1px solid var(--neutral);
+  background: var(--panel);
+  padding: 12px;
+  margin-top: 10px;
+  height: 260px; /* important */
+}
+
+#stationHistorical{
+  padding-top: 15px;
+}
+
+#historicalCanvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+
+/* tooltips */
+.stationTooltip {
+  position: fixed;
+  z-index: 2000;
+  min-width: 190px;
+  max-width: 260px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  color: var(--text);
+  pointer-events: none;
+  transform: translate(12px, -10px);
+}
+
+.stationTooltip[hidden] {
+  display: none;
+}
+
+.stationTooltip .tooltipTitle {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stationTooltip .tooltipRow {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.stationTooltip .tooltipMuted {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* --- weather widget --- */
+#weatherBlock{
+  margin-top: 18px;
+  position: static;
+}
+
+#weatherSection{
+  background: var(--primary-dark);
+  color: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+#weatherSection h2,
+#weatherSection .title{
+  margin: 0 0 16px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+#weatherForecast{
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--primary);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+  padding: 18px 10px;
+  overflow-x: auto;
+}
+
+#weatherForecast .column{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 62px;
+}
+
+#weatherForecast .time-label{
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+#weatherForecast .weather-icon{
+  width: 42px;
+  height: 42px;
+  margin: 4px 0 8px 0;
+  display: block;
+}
+
+#weatherForecast .temp{
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+#weatherForecast .stat{
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8fd3ff;
+}
+
+#weatherUpdated,
+.update-time{
+  margin: 14px 0 0 0;
+  font-size: 11px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.weather-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.weather-toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  padding-bottom: 4px;
+}
+
+.weather-toggle button {
+  border: none;
+  background: transparent;
+  color: #dbeafe;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.weather-toggle button.active {
+  background: rgba(255,255,255,0.18);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+

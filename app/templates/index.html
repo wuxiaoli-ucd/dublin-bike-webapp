@@ -1,0 +1,219 @@
+ <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- Makes layout responsive on smaller screens -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  
+  <title>Dublin Bikes</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="../static/images/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="topbar">
+    <div id="topbar-left">
+      
+      <div id="brand">
+        <img id="brand-icon" src="{{ url_for('static', filename='images/red_bike_icon.png') }}" alt="Bike Logo">
+        <span id="brand-name">Dublin Bikes</span>
+      </div>
+    </div>
+
+    <div id="topbar-right">
+      <div id="weatherSummary">
+        <span id="weatherText">
+          <span class="label">Weather:</span>
+          <span class="value">—</span>
+          </span>
+
+        <span id="tempText">
+          <span class="label">Temp:</span>
+          <span class="value">—</span>
+        </span>
+
+        <button id="btnMenu" aria-label="Open menu" type="button">☰</button>
+        <div id="menuDropdown" hidden>
+          <div id="howTo" class="menuItem">❓ How to use</div>
+          <div class="menuItem">🚴 Total cycled: <span id="kmValue">0</span> km</div>
+          <div class="menuItem">🌱 Total CO2 saved: <span id="co2Value">0</span> kg</div>
+          <div class="menuItem">🚲 Total trips: <span id="trips">0</span></div>
+        </div>
+
+        <div id="howToPopup" hidden>
+          <div class="howToTitle">How to use</div>
+          <ol class="howToList">
+            <li>In the directions panel, enter a start point and destination using the suggestions.</li>
+            <li>Choose <strong>Leave Now</strong> or <strong>Depart At</strong>.</li>
+            <li>Click <strong>Get Directions</strong> to view the suggested route.</li>
+            <li>Click any station marker to view live, historical, and predicted availability.</li>
+            <li>Use the <strong>Weather</strong> panel to check forecast conditions before travelling.</li>
+          </ol>
+        
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- floating toggle buttons -->
+  <div id="panelToggleBar">
+    <button id="toggleDirections" class="toggle-btn active" type="button">
+      Directions
+    </button>
+    <button id="toggleWeather" class="toggle-btn active" type="button">
+      Weather
+    </button>
+  </div>
+
+  <!-- App Layout -->
+  <div id="app">
+  <!-- Left Panel -->
+    <aside id="leftPanel">
+      <div id="leftPanelContent">
+        <section id="directionsBlock">
+          <div class="inputWrap">
+            <input id="start" placeholder="Choose starting point..." autocomplete="off" />
+            <button class="clearInput" data-target="start" type="button">✕</button>
+          </div>
+
+          <div class="inputWrap">
+            <input id="dest" placeholder="Choose destination..." autocomplete="off" />
+            <button class="clearInput" data-target="dest" type="button">✕</button>
+          </div>
+
+          <div id="departControls">
+            <button id="leaveNow" type="button" class="seg active">Leave Now</button>
+            <button id="departAt" type="button" class="seg">Depart At</button>
+          </div>
+
+          <div id="departAtOptions" class="departAtOptions hidden">
+            <select id="departDay"></select>
+            <input id="departTime" type="time" step="900">
+          </div>
+
+          <button id="go" type="button">Get Directions</button>
+
+          <p id="error" role="alert" aria-live="polite"></p>
+
+          <section id="routeSection" hidden>
+            <h2>Route Details</h2>
+            <div id="routeSummaryRow">
+              <span id="summary">—</span>
+            </div>
+            <div id="list"></div>
+          </section>
+        </section>
+
+        <section id="weatherBlock">
+          <section id="weatherSection" class="weather-card">
+            <h2 class="title">Weather Forecast</h2>
+            
+            <div class="weather-toggle">
+              <button id="weatherHourlyBtn" class="active" type="button">Hourly</button>
+              <button id="weatherDailyBtn" type="button">Daily</button>
+            </div>
+
+            <div id="weatherForecast" class="forecast-grid" aria-live="polite"></div>
+            <p id="weatherUpdated" class="update-time">Updating weather…</p>
+          </section>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Map -->
+    <main id="mapWrap">
+      <div id="map" aria-label="Map"></div>
+    </main>
+
+    <!-- Right Panel (Station Panel) - hidden until station selected -->
+    <aside id="rightPanel">
+      <div id="stationHeader">
+        <div id="stationHeaderLeft">
+          <h2 id="stationName">Station</h2>
+        </div>
+        <button id="closeStationPanel" type="button" aria-label="Close station panel">✕</button>
+      </div>
+
+      <!-- Current Availability -->
+      <section id="stationCurrent">
+        <h3>Current Availability</h3>
+
+        <div class="statGrid">
+          <div class="statCard">
+            <div class="statLabel">Available bikes</div>
+            <div class="statValue" id="stationBikes">—</div>
+            <div class="statHint">bikes ready</div>
+          </div>
+
+          <div class="statCard">
+            <div class="statLabel">Available bike stands</div>
+            <div class="statValue" id="stationStands">—</div>
+            <div class="statHint">stands free</div>
+          </div>
+        </div>
+
+        <div class="barRow">
+          <div class="barLabel">Station Capacity</div>
+          <div class="bar">
+            <div class="barFill" id="stationCapacityFill" style="width:0%"></div>
+          </div>
+          <div class="barPct" id="stationCapacityPct">—%</div>
+        </div>
+      </section>
+
+      <!-- Predicted Availability -->
+      <section id="stationPredicted">
+        <h3>Predicted Availability</h3>
+        <div class="sections" id="predictedSubtitle">Next 3 days forecast</div>
+
+        <div class="toggleRow">
+          <button type="button" class="seg active" data-chart="predicted" data-mode="days">Days</button>
+          <button type="button" class="seg" data-chart="predicted" data-mode="hours">Hours</button>
+        </div>
+
+        <div class="chartBox" id="predictedChart">
+          <canvas id="predictedCanvas"></canvas>
+        </div>
+
+      </section>
+
+
+      <!-- Historical Availability -->
+      <section id="stationHistorical">
+        <h3>Historical Availability</h3>
+
+        <div class="sections" id="historySubtitle">Past 7 days data</div>
+
+        <div class="toggleRow">
+          <button type="button" class="seg active" data-chart="historical" data-mode="days">Days</button>
+          <button type="button" class="seg" data-chart="historical" data-mode="hours">Hours</button>
+        </div>
+
+        <!-- chart placeholder -->
+        <div class="chartBox" id="historicalChart">
+          <canvas id="historicalCanvas"></canvas>
+        </div>
+
+      </section>
+    </aside>
+  </div>
+
+  <!-- custom station tooltip for when hovering over station markers -->
+  <div id="stationTooltip" class="stationTooltip" hidden></div>
+
+  <!-- Chart.js should load before modules -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='js/historical_availability.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/station_markers.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/predictions.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+  <!-- Google Maps JS + Places -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key={{ apikey }}&libraries=places&callback=initMap"
+    async defer></script>
+</body>
+</html>

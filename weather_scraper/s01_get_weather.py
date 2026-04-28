@@ -8,6 +8,11 @@ import dbinfo
 
 
 def get_weather() -> dict:
+    """
+    Requests current/hourly weather data for Dublin from OpenWeather.
+
+    The response is returned as raw JSON so it can be saved or processed later.
+    """
     params = {
         "lat": dbinfo.LAT,
         "lon": dbinfo.LON,
@@ -40,6 +45,12 @@ def write_to_file(payload: dict) -> str:
 
 
 def main():
+    """
+    Runs the scraper and logs errors with a full traceback.
+
+    This was useful when this script was run automatically 
+    with cron on EC2.
+    """
     try:
         payload = get_weather()
         path = write_to_file(payload)

@@ -1,11 +1,16 @@
-.idea/
+# Python
 __pycache__/
 *.pyc
-.env
 venv/
-.DS_Store
-.vscode/models/final_merged_data.csv
-models/bike_model.joblib
-models/final_merged_data.csv
+.env
+
+# IDEs
 .vscode/
-app/.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Data & models
+models/*.joblib
+models/*.csv
